@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pemakaian & Manajemen Alat Lab Biologi Kedokteran FK UNAIR</title>
+    <title>Sistem Pemakaian & Manajemen Lab Biologi Kedokteran FK UNAIR</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -46,12 +46,18 @@
 
     <!-- Navigation Tabs -->
     <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[76px] z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-8 text-sm font-medium text-slate-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-6 text-sm font-medium text-slate-600">
             <button onclick="switchTab('katalog')" id="tab-katalog" class="tab-btn py-4 whitespace-nowrap active flex items-center gap-2">
                 <i class="fa-solid fa-boxes-stacked"></i> Katalog Alat
             </button>
             <button onclick="switchTab('pemakaian')" id="tab-pemakaian" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
                 <i class="fa-solid fa-file-signature"></i> Pemakaian Alat
+            </button>
+            <button onclick="switchTab('ruangan')" id="tab-ruangan" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
+                <i class="fa-solid fa-door-open"></i> Katalog Ruangan
+            </button>
+            <button onclick="switchTab('pinjam-ruangan')" id="tab-pinjam-ruangan" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check"></i> Peminjaman Ruangan
             </button>
             <button onclick="switchTab('maintenance')" id="tab-maintenance" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
                 <i class="fa-solid fa-screwdriver-wrench"></i> Maintenance Log
@@ -191,7 +197,114 @@
             </div>
         </section>
 
-        <!-- PANEL 3: MAINTENANCE LOG -->
+        <!-- PANEL 3: KATALOG RUANGAN (BARU) -->
+        <section id="panel-ruangan" class="hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-door-open text-indigo-600"></i> Katalog Ruangan Laboratorium
+                    </h3>
+                    <p class="text-xs text-slate-500">Daftar ruangan praktikum & penelitian Biologi Kedokteran</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="add-room-btn" onclick="openRoomModal()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Tambah Ruangan
+                    </button>
+                </div>
+            </div>
+
+            <div id="ruangan-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- PANEL 4: PEMINJAMAN RUANGAN (BARU) -->
+        <section id="panel-pinjam-ruangan" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Form Pinjam Ruangan -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Form Peminjaman Ruangan
+                    </h3>
+                    <form onsubmit="handleRoomBookingSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Ruangan <span class="text-rose-500">*</span></label>
+                            <select id="booking-room-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"></select>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Peminjam / Penanggung Jawab</label>
+                                <input type="text" id="booking-borrower" required placeholder="Nama Lengkap / NIM / NIP..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Orang <span class="text-rose-500">*</span></label>
+                                <input type="number" id="booking-people" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Instansi / Prodi / Departemen</label>
+                            <input type="text" id="booking-dept" required placeholder="Contoh: Dept. Biologi FK UNAIR" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <div class="border p-3 rounded-xl bg-slate-50 space-y-3">
+                            <span class="block text-xs font-bold text-indigo-900"><i class="fa-solid fa-clock mr-1"></i> Jadwal Penggunaan Ruangan</span>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tanggal Peminjaman <span class="text-rose-500">*</span></label>
+                                <input type="date" id="booking-date" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
+                                    <input type="time" id="booking-start-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
+                                    <input type="time" id="booking-end-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Agenda / Keperluan Kegiatan</label>
+                            <textarea id="booking-purpose" rows="2" required placeholder="Detail kegiatan di ruangan..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold shadow-md transition">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> Ajukan Peminjaman Ruangan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Rekapitulasi Peminjaman Ruangan -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Peminjaman Ruangan
+                        </h3>
+                        <button onclick="exportPDF('print-pinjam-ruangan', 'Rekapitulasi_Peminjaman_Ruangan')" class="admin-only hidden bg-indigo-900 hover:bg-indigo-950 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> Download PDF
+                        </button>
+                    </div>
+
+                    <div id="print-pinjam-ruangan" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                    <th class="p-3">Jadwal (Tgl & Waktu)</th>
+                                    <th class="p-3">Nama Ruangan</th>
+                                    <th class="p-3">Peminjam & Peserta</th>
+                                    <th class="p-3">Agenda Kegiatan</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="room-booking-table-body" class="divide-y divide-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL 5: MAINTENANCE LOG -->
         <section id="panel-maintenance" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
@@ -229,7 +342,7 @@
             </div>
         </section>
 
-        <!-- PANEL 4: KONTAK PENGELOLA -->
+        <!-- PANEL 6: KONTAK PENGELOLA -->
         <section id="panel-kontak" class="hidden space-y-6">
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto">
                 <h3 class="text-xl font-extrabold text-indigo-950 mb-6 text-center border-b pb-4">
@@ -389,6 +502,53 @@
         </div>
     </div>
 
+    <!-- MODAL EDIT/TAMBAH RUANGAN (BARU) -->
+    <div id="modal-room" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 id="room-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Ruangan Laboratorium</h3>
+            <form onsubmit="handleRoomSubmit(event)" class="space-y-4">
+                <input type="hidden" id="room-id">
+                <input type="hidden" id="room-firebase-key">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ruangan Lab</label>
+                    <input type="text" id="room-name" required placeholder="Contoh: Lab Biologi Molekuler Utama" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kapasitas (Orang)</label>
+                        <input type="number" id="room-capacity" min="1" required placeholder="Contoh: 30" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
+                        <select id="room-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Sedang Dipakai">Sedang Dipakai</option>
+                            <option value="Perawatan">Perawatan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Fasilitas Utama</label>
+                    <textarea id="room-facilities" rows="2" placeholder="Contoh: AC, AC Laminar Air Flow, Centrifuge, Mikroskop, Wi-Fi" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
+                    <label class="block text-xs font-bold text-slate-700">Foto / Gambar Ruangan</label>
+                    <input type="file" id="room-image-file" accept="image/*" onchange="previewRoomImageFile(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700">
+                    <p class="text-[10px] text-slate-500 font-semibold mt-1">Atau masukkan Link Google Drive / Image URL:</p>
+                    <input type="text" id="room-image-url" placeholder="https://drive.google.com/file/d/..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
+                    <input type="hidden" id="room-image-base64">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeRoomModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Ruangan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL MAINTENANCE LOG -->
     <div id="modal-maintenance" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
@@ -451,40 +611,67 @@
             { id: "eq3", name: "Mikroskop Binokuler Nikon", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", sop: { tujuan: "Observasi sampel biologi kedokteran.", bahan: "Preparat, alkohol 70%.", prosedur: "1. Nyalakan lampu LED.\n2. Atur okuler sesuai jarak mata.\n3. Fokuskan objek.", k3: "Pastikan meja objek kering sebelum dan sesudah dipasang sampel." } }
         ];
 
+        const defaultRooms = [
+            { id: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
+            { id: "rm2", name: "Laboratorium Biologi Molekuler & Kultur Sel", capacity: 15, facilities: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80" },
+            { id: "rm3", name: "Ruang Diskusi & Seminar Lab", capacity: 25, facilities: "Smart TV, Sound System, Papan Tulis, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80" }
+        ];
+
         window.equipments = [];
+        window.rooms = [];
         window.usageLogs = [];
+        window.roomBookings = [];
         window.maintenanceLogs = [];
         window.isAdmin = false;
 
-        // REALTIME LISTENER ALAT
+        // LISTENER KATALOG ALAT
         onValue(ref(db, 'equipments'), (snapshot) => {
             const data = snapshot.val();
             if (data && Object.keys(data).length > 0) {
                 window.equipments = Object.keys(data).map(key => ({ ...data[key], firebaseKey: key }));
             } else {
-                defaultEquipments.forEach(item => {
-                    set(ref(db, 'equipments/' + item.id), item);
-                });
+                defaultEquipments.forEach(item => set(ref(db, 'equipments/' + item.id), item));
                 window.equipments = defaultEquipments.map(item => ({ ...item, firebaseKey: item.id }));
             }
             renderKatalog();
             populateDropdowns();
         });
 
-        // REALTIME LISTENER PEMAKAIAN
+        // LISTENER KATALOG RUANGAN
+        onValue(ref(db, 'rooms'), (snapshot) => {
+            const data = snapshot.val();
+            if (data && Object.keys(data).length > 0) {
+                window.rooms = Object.keys(data).map(key => ({ ...data[key], firebaseKey: key }));
+            } else {
+                defaultRooms.forEach(item => set(ref(db, 'rooms/' + item.id), item));
+                window.rooms = defaultRooms.map(item => ({ ...item, firebaseKey: item.id }));
+            }
+            renderRuangan();
+            populateRoomDropdowns();
+        });
+
+        // LISTENER PEMAKAIAN ALAT
         onValue(ref(db, 'usageLogs'), (snapshot) => {
             const data = snapshot.val();
             window.usageLogs = data ? Object.keys(data).map(key => ({ ...data[key], firebaseKey: key })).reverse() : [];
             renderUsageTable();
         });
 
-        // REALTIME LISTENER MAINTENANCE
+        // LISTENER PEMINJAMAN RUANGAN
+        onValue(ref(db, 'roomBookings'), (snapshot) => {
+            const data = snapshot.val();
+            window.roomBookings = data ? Object.keys(data).map(key => ({ ...data[key], firebaseKey: key })).reverse() : [];
+            renderRoomBookingTable();
+        });
+
+        // LISTENER MAINTENANCE LOG
         onValue(ref(db, 'maintenanceLogs'), (snapshot) => {
             const data = snapshot.val();
             window.maintenanceLogs = data ? Object.keys(data).map(key => ({ ...data[key], firebaseKey: key })).reverse() : [];
             renderMaintenanceTable();
         });
 
+        // ACTION ALAT
         window.handleEquipmentSubmit = function(e) {
             e.preventDefault();
             const id = document.getElementById('eq-id').value;
@@ -520,6 +707,85 @@
             }
         };
 
+        // ACTION RUANGAN
+        window.handleRoomSubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('room-id').value;
+            const firebaseKey = document.getElementById('room-firebase-key').value;
+            const name = document.getElementById('room-name').value;
+            const capacity = document.getElementById('room-capacity').value;
+            const status = document.getElementById('room-status').value;
+            const facilities = document.getElementById('room-facilities').value;
+            const imgUrl = document.getElementById('room-image-url').value;
+            const imgBase64 = document.getElementById('room-image-base64').value;
+
+            const image = imgBase64 || imgUrl || '';
+            const roomId = id || ('rm' + Date.now());
+            const targetKey = firebaseKey || roomId;
+
+            set(ref(db, `rooms/${targetKey}`), { id: roomId, name, capacity, facilities, status, image })
+                .then(() => {
+                    alert('Data ruangan berhasil disimpan!');
+                    closeRoomModal();
+                })
+                .catch(err => alert('Gagal menyimpan: ' + err.message));
+        };
+
+        window.deleteRoom = function(firebaseKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus ruangan ini dari katalog?')) {
+                remove(ref(db, `rooms/${firebaseKey}`));
+            }
+        };
+
+        // ACTION PINJAM RUANGAN
+        window.handleRoomBookingSubmit = function(e) {
+            e.preventDefault();
+            const roomId = document.getElementById('booking-room-select').value;
+            const borrower = document.getElementById('booking-borrower').value;
+            const people = document.getElementById('booking-people').value || 1;
+            const dept = document.getElementById('booking-dept').value;
+            const purpose = document.getElementById('booking-purpose').value;
+            const dateVal = document.getElementById('booking-date').value;
+            const startTime = document.getElementById('booking-start-time').value;
+            const endTime = document.getElementById('booking-end-time').value;
+
+            let formattedDate = dateVal;
+            if (dateVal) {
+                const parts = dateVal.split('-');
+                if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            const room = window.rooms.find(r => r.id === roomId || r.firebaseKey === roomId);
+
+            const newBooking = {
+                id: 'rb' + Date.now(),
+                date: formattedDate || new Date().toLocaleDateString('id-ID'),
+                timeSchedule: `${startTime} - ${endTime} WIB`,
+                roomName: room ? room.name : 'Ruangan Lab',
+                peopleCount: people,
+                borrower: `${borrower} (${dept})`,
+                purpose,
+                status: 'Menunggu Persetujuan'
+            };
+
+            push(ref(db, 'roomBookings'), newBooking);
+            e.target.reset();
+            document.getElementById('booking-people').value = 1;
+            document.getElementById('booking-date').value = new Date().toISOString().split('T')[0];
+            alert('Permohonan peminjaman ruangan berhasil diajukan secara Realtime!');
+        };
+
+        window.updateRoomBookingStatus = function(firebaseKey, status) {
+            update(ref(db, `roomBookings/${firebaseKey}`), { status });
+        };
+
+        window.deleteRoomBookingLog = function(firebaseKey) {
+            if (confirm('Hapus log peminjaman ruangan ini?')) {
+                remove(ref(db, `roomBookings/${firebaseKey}`));
+            }
+        };
+
+        // ACTION ALAT PEMAKAIAN
         window.handleUsageSubmit = function(e) {
             e.preventDefault();
             const eqId = document.getElementById('usage-equipment-select').value;
@@ -570,6 +836,7 @@
             }
         };
 
+        // ACTION MAINTENANCE
         window.handleMaintenanceSubmit = function(e) {
             e.preventDefault();
             const eqId = document.getElementById('maint-equipment').value;
@@ -598,7 +865,6 @@
 
             push(ref(db, 'maintenanceLogs'), newMaint);
 
-            // AUTO UPDATE STATUS KATALOG ALAT
             if (eq) {
                 let eqStatus = 'Tersedia';
                 if (status === 'Sedang Dikerjakan') eqStatus = 'Perawatan';
@@ -615,7 +881,6 @@
         window.updateMaintenanceStatus = function(firebaseKey, equipmentKey, status) {
             update(ref(db, `maintenanceLogs/${firebaseKey}`), { status });
 
-            // UPDATE STATUS STATUS ALAT DI KATALOG
             if (equipmentKey) {
                 let eqStatus = 'Tersedia';
                 if (status === 'Sedang Dikerjakan') eqStatus = 'Perawatan';
@@ -648,7 +913,7 @@
         }
 
         function switchTab(tabName) {
-            ['katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(t => {
+            ['katalog', 'pemakaian', 'ruangan', 'pinjam-ruangan', 'maintenance', 'kontak'].forEach(t => {
                 const p = document.getElementById(`panel-${t}`);
                 const btn = document.getElementById(`tab-${t}`);
                 if (p) p.classList.add('hidden');
@@ -690,7 +955,7 @@
             const badge = document.getElementById('admin-badge');
             const btnText = document.getElementById('auth-btn-text');
             const icon = document.getElementById('auth-icon');
-            const adminElements = document.querySelectorAll('.admin-only, #add-equipment-btn');
+            const adminElements = document.querySelectorAll('.admin-only, #add-equipment-btn, #add-room-btn');
 
             if (window.isAdmin) {
                 if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
@@ -704,7 +969,9 @@
                 adminElements.forEach(el => el.classList.add('hidden'));
             }
             renderKatalog();
+            renderRuangan();
             renderUsageTable();
+            renderRoomBookingTable();
             renderMaintenanceTable();
         }
 
@@ -768,6 +1035,154 @@
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        function renderRuangan() {
+            const grid = document.getElementById('ruangan-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if ((window.rooms || []).length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 font-semibold"><i class="fa-solid fa-door-closed text-4xl mb-2 block"></i>Belum ada data ruangan laboratorium.</div>';
+                return;
+            }
+
+            window.rooms.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
+
+                const statusBg = {
+                    'Tersedia': 'bg-emerald-100 text-emerald-800',
+                    'Sedang Dipakai': 'bg-amber-100 text-amber-800',
+                    'Perawatan': 'bg-blue-100 text-blue-800'
+                }[item.status] || 'bg-slate-100 text-slate-800';
+
+                const formattedUrl = formatGoogleDriveUrl(item.image);
+                const hasImage = formattedUrl && formattedUrl.trim() !== '';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden flex items-center justify-center">
+                            ${hasImage ? `<img src="${formattedUrl}" alt="${item.name}" class="w-full h-full object-cover">` : `<div class="flex flex-col items-center justify-center text-slate-400 p-4 text-center"><i class="fa-solid fa-building text-4xl text-slate-300 mb-2"></i><span class="text-xs font-semibold text-slate-500">Foto Ruangan Lab</span></div>`}
+                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm ${statusBg}">${item.status}</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                            <div class="text-xs text-slate-600 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <span class="font-semibold">${item.capacity} Orang</span>
+                            </div>
+                            <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <strong class="text-slate-700 block mb-0.5"><i class="fa-solid fa-list text-emerald-600 mr-1"></i>Fasilitas:</strong>
+                                ${item.facilities || 'AC, Meja Kerja'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0">
+                        ${window.isAdmin ? `
+                            <div class="flex gap-2 pt-2 border-t">
+                                <button onclick="openRoomModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                <button onclick="deleteRoom('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function populateRoomDropdowns() {
+            const select = document.getElementById('booking-room-select');
+            if (!select) return;
+            select.innerHTML = '';
+
+            (window.rooms || []).forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.firebaseKey || r.id;
+                opt.innerText = `${r.name} (Kap: ${r.capacity} Orang - ${r.status})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderRoomBookingTable() {
+            const tbody = document.getElementById('room-booking-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if ((window.roomBookings || []).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada riwayat peminjaman ruangan.</td></tr>';
+                return;
+            }
+
+            window.roomBookings.forEach(log => {
+                const tr = document.createElement('tr');
+                const badgeClass = {
+                    'Menunggu Persetujuan': 'bg-amber-100 text-amber-800',
+                    'Disetujui': 'bg-emerald-100 text-emerald-800',
+                    'Selesai': 'bg-slate-100 text-slate-700'
+                }[log.status] || 'bg-slate-100';
+
+                const scheduleDisplay = `<div class="font-bold text-slate-800">${log.date}</div><div class="text-[10px] text-indigo-600 font-semibold"><i class="fa-regular fa-clock mr-1"></i>${log.timeSchedule}</div>`;
+                const roomDisplay = `<div class="font-semibold text-slate-800">${log.roomName}</div>`;
+                const borrowerDisplay = `<div class="font-medium text-slate-800">${log.borrower}</div><div class="text-[10px] text-slate-500"><i class="fa-solid fa-users mr-1"></i>Jumlah: <span class="font-bold text-emerald-700">${log.peopleCount || 1} Orang</span></div>`;
+
+                tr.innerHTML = `
+                    <td class="p-3">${scheduleDisplay}</td>
+                    <td class="p-3">${roomDisplay}</td>
+                    <td class="p-3">${borrowerDisplay}</td>
+                    <td class="p-3">${log.purpose}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${log.status}</span></td>
+                    <td class="p-3 text-right">
+                        ${window.isAdmin ? `
+                            <div class="flex justify-end gap-1">
+                                ${log.status === 'Menunggu Persetujuan' ? `<button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px]">Setujui</button>` : ''}
+                                ${log.status === 'Disetujui' ? `<button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Selesai')" class="bg-slate-600 text-white px-2 py-0.5 rounded text-[10px]">Selesai</button>` : ''}
+                                <button onclick="deleteRoomBookingLog('${log.firebaseKey}')" class="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        ` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openRoomModal(key = null) {
+            const modal = document.getElementById('modal-room');
+            modal.classList.remove('hidden');
+
+            if (key) {
+                const item = window.rooms.find(r => r.firebaseKey === key || r.id === key);
+                if (!item) return;
+
+                document.getElementById('room-modal-title').innerText = 'Edit Detail Ruangan';
+                document.getElementById('room-id').value = item.id || '';
+                document.getElementById('room-firebase-key').value = item.firebaseKey || key;
+                document.getElementById('room-name').value = item.name || '';
+                document.getElementById('room-capacity').value = item.capacity || '';
+                document.getElementById('room-status').value = item.status || 'Tersedia';
+                document.getElementById('room-facilities').value = item.facilities || '';
+                document.getElementById('room-image-url').value = (item.image && !item.image.startsWith('data:')) ? item.image : '';
+                document.getElementById('room-image-base64').value = (item.image && item.image.startsWith('data:')) ? item.image : '';
+            } else {
+                document.getElementById('room-modal-title').innerText = 'Tambah Ruangan Lab Baru';
+                document.getElementById('room-id').value = '';
+                document.getElementById('room-firebase-key').value = '';
+                document.getElementById('room-name').value = '';
+                document.getElementById('room-capacity').value = '';
+                document.getElementById('room-facilities').value = '';
+                document.getElementById('room-image-url').value = '';
+                document.getElementById('room-image-base64').value = '';
+            }
+        }
+
+        function closeRoomModal() { document.getElementById('modal-room').classList.add('hidden'); }
+
+        function previewRoomImageFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() { document.getElementById('room-image-base64').value = reader.result; }
+                reader.readAsDataURL(file);
+            }
         }
 
         function openEquipmentModal(key = null) {
@@ -951,6 +1366,7 @@
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
             if (document.getElementById('usage-date')) document.getElementById('usage-date').value = today;
+            if (document.getElementById('booking-date')) document.getElementById('booking-date').value = today;
             if (document.getElementById('maint-date')) document.getElementById('maint-date').value = today;
         };
     </script>
