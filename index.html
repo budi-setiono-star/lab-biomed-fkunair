@@ -13,9 +13,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f1f5f9; color: #1e293b; line-height: 1.5; }
         
-        .bg-unair-blue { background-color: #002B49; }
-        .bg-unair-yellow { background-color: #FFC72C; }
-
         header { background-color: #002B49; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50; }
         .header-container { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
         .brand-info { display: flex; align-items: center; gap: 15px; }
@@ -255,6 +252,7 @@
                     <p>Daftar medis & instrumen penelitian laboratorium</p>
                 </div>
                 <div style="display:flex; gap:10px;">
+                    <button onclick="resetDataBawaan()" class="admin-only-inline btn-admin-add" style="background:#d97706;">🔄 Reset Data Bawaan</button>
                     <button onclick="cetakLaporan('Katalog Peralatan Laboratorium')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
                     <button onclick="openModalAlat()" class="admin-only btn-admin-add">➕ Tambah Alat</button>
                 </div>
@@ -515,7 +513,7 @@
 
         function convertGDriveLink(url) {
             if (!url) return '';
-            url = url.trim();
+            url = String(url).trim();
             let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
                 return `https://lh3.googleusercontent.com/d/${match[1]}`;
@@ -523,18 +521,18 @@
             return url;
         }
 
-        // DATA BAWAAN AWAL
-        const defaultRuangan = [
-            { id: 1, nama: "Ruang Praktikum Biologi Kedokteran", kapasitas: 40, fasilitas: ["AC", "Mikroskop Binokuler", "LCD Projector"], foto: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
-            { id: 2, nama: "Ruang Laboratorium Kultur Sel", kapasitas: 10, fasilitas: ["Biosafety Cabinet Class II", "Incubator CO2", "HEPA Filter"], foto: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
-            { id: 3, nama: "Ruang Riset Biologi Molekuler", kapasitas: 15, fasilitas: ["Real-Time PCR", "Centrifuge Refrigerated", "Gel Doc"], foto: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80", status: "Terpakai" }
-        ];
+        // DATA BAWAAN DEFAULT
+        const defaultRuangan = {
+            "R1": { id: "R1", nama: "Ruang Praktikum Biologi Kedokteran", kapasitas: 40, fasilitas: ["AC", "Mikroskop Binokuler", "LCD Projector"], foto: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
+            "R2": { id: "R2", nama: "Ruang Laboratorium Kultur Sel", kapasitas: 10, fasilitas: ["Biosafety Cabinet Class II", "Incubator CO2", "HEPA Filter"], foto: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
+            "R3": { id: "R3", nama: "Ruang Riset Biologi Molekuler", kapasitas: 15, fasilitas: ["Real-Time PCR", "Centrifuge Refrigerated", "Gel Doc"], foto: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80", status: "Terpakai" }
+        };
 
-        const defaultAlat = [
-            { id: 1, nama: "PCR Thermal Cycler Applied Biosystems", kategori: "Biologi Molekuler", jumlah: 2, foto: "https://images.unsplash.com/photo-1583912267670-657592e850b6?auto=format&fit=crop&w=600&q=80", status: "Siap Pakai", sop: "1. Pastikan daya listrik via UPS.\n2. Buka lid PCR secara perlahan.\n3. Masukkan tube PCR 0.2 ml." },
-            { id: 2, nama: "Inverted Fluorescence Microscope Olympus", kategori: "Mikroskopi", jumlah: 1, foto: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80", status: "Siap Pakai", sop: "1. Nyalakan sumber daya lampu.\n2. Atur fokus lensa secara bertahap." },
-            { id: 3, nama: "CO2 Incubator Thermo Scientific", kategori: "Kultur Sel", jumlah: 3, foto: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", status: "Sedang Digunakan", sop: "1. Periksa ketersediaan gas CO2.\n2. Tutup pintu rapat setelah digunakan." }
-        ];
+        const defaultAlat = {
+            "A1": { id: "A1", nama: "PCR Thermal Cycler Applied Biosystems", kategori: "Biologi Molekuler", jumlah: 2, foto: "https://images.unsplash.com/photo-1583912267670-657592e850b6?auto=format&fit=crop&w=600&q=80", status: "Siap Pakai", sop: "1. Pastikan daya listrik via UPS.\n2. Buka lid PCR secara perlahan.\n3. Masukkan tube PCR 0.2 ml." },
+            "A2": { id: "A2", nama: "Inverted Fluorescence Microscope Olympus", kategori: "Mikroskopi", jumlah: 1, foto: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80", status: "Siap Pakai", sop: "1. Nyalakan sumber daya lampu.\n2. Atur fokus lensa secara bertahap." },
+            "A3": { id: "A3", nama: "CO2 Incubator Thermo Scientific", kategori: "Kultur Sel", jumlah: 3, foto: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", status: "Sedang Digunakan", sop: "1. Periksa ketersediaan gas CO2.\n2. Tutup pintu rapat setelah digunakan." }
+        };
 
         const defaultKontak = [
             { jabatan: "Kepala Laboratorium", nama: "Dr. dr. Resti Yuditha, M.Biomed", wa: "6281234567890", email: "resti.yuditha@fk.unair.ac.id", foto: "" },
@@ -542,33 +540,58 @@
             { jabatan: "Admin Administrasi Lab", nama: "Nita Permata, A.Md", wa: "6281987654321", email: "nita.permata@fk.unair.ac.id", foto: "" }
         ];
 
-        let dataRuangan = [];
-        let dataAlat = [];
+        let dataRuangan = {};
+        let dataAlat = {};
         let dataPemakaianRuangan = [];
         let dataPemakaianAlat = [];
         let dataMaintenance = [];
         let dataKontak = [];
 
-        // SINKRONISASI REALTIME + AUTO SEED DATABASE
+        // NORMALIZE ARRAY/OBJECT DARI FIREBASE
+        function normalizeToObject(val) {
+            if (!val) return {};
+            if (Array.isArray(val)) {
+                let obj = {};
+                val.forEach((item, index) => {
+                    if (item) {
+                        let id = item.id || 'ID_' + index;
+                        obj[id] = { ...item, id: id };
+                    }
+                });
+                return obj;
+            }
+            if (typeof val === 'object') {
+                let normalized = {};
+                Object.keys(val).forEach(key => {
+                    if (val[key]) {
+                        normalized[key] = { ...val[key], id: val[key].id || key };
+                    }
+                });
+                return normalized;
+            }
+            return {};
+        }
+
+        // SINKRONISASI REALTIME
         function initRealtimeSync() {
             db.ref('rooms').on('value', (snapshot) => {
                 const val = snapshot.val();
-                if(!val) {
+                if (!val) {
                     db.ref('rooms').set(defaultRuangan);
                     dataRuangan = defaultRuangan;
                 } else {
-                    dataRuangan = Array.isArray(val) ? val : Object.values(val);
+                    dataRuangan = normalizeToObject(val);
                 }
                 renderRuangan();
             });
 
             db.ref('equipments').on('value', (snapshot) => {
                 const val = snapshot.val();
-                if(!val) {
+                if (!val) {
                     db.ref('equipments').set(defaultAlat);
                     dataAlat = defaultAlat;
                 } else {
-                    dataAlat = Array.isArray(val) ? val : Object.values(val);
+                    dataAlat = normalizeToObject(val);
                 }
                 renderAlat();
             });
@@ -601,6 +624,14 @@
                 }
                 renderKontak();
             });
+        }
+
+        function resetDataBawaan() {
+            if(confirm('Reset semua data Ruangan dan Alat ke data awal bawaan?')) {
+                db.ref('rooms').set(defaultRuangan);
+                db.ref('equipments').set(defaultAlat);
+                alert('Data berhasil di-reset!');
+            }
         }
 
         function switchTab(tabId) {
@@ -693,8 +724,10 @@
             const select = document.getElementById('p_ruangan');
             grid.innerHTML = ''; select.innerHTML = '';
 
-            dataRuangan.forEach(r => {
-                select.innerHTML += `<option value="${r.id}">${r.nama} (Kap. ${r.kapasitas})</option>`;
+            const keys = Object.keys(dataRuangan);
+            keys.forEach(key => {
+                const r = dataRuangan[key];
+                select.innerHTML += `<option value="${r.id}">${r.nama || 'Ruangan'} (Kap. ${r.kapasitas || 0})</option>`;
                 let statusClass = r.status === 'Tersedia' ? 'status-ready' : (r.status === 'Terpakai' ? 'status-busy' : 'status-maintenance');
                 let directFotoUrl = convertGDriveLink(r.foto);
                 let imgHTML = (directFotoUrl && directFotoUrl !== '') 
@@ -706,21 +739,21 @@
                         <div>
                             <div class="card-img-container">
                                 ${imgHTML}
-                                <span class="status-tag ${statusClass}">${r.status}</span>
+                                <span class="status-tag ${statusClass}">${r.status || 'Tersedia'}</span>
                             </div>
                             <div class="card-body">
-                                <h3>${r.nama}</h3>
-                                <p>👥 Kapasitas: ${r.kapasitas} Orang</p>
+                                <h3>${r.nama || 'Nama Ruangan'}</h3>
+                                <p>👥 Kapasitas: ${r.kapasitas || 0} Orang</p>
                                 <div style="font-size:11px; color:#475569;">
-                                    <strong>Fasilitas:</strong> ${Array.isArray(r.fasilitas) ? r.fasilitas.join(', ') : r.fasilitas}
+                                    <strong>Fasilitas:</strong> ${Array.isArray(r.fasilitas) ? r.fasilitas.join(', ') : (r.fasilitas || '-')}
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
                             <button onclick="switchTab('pemakaian-ruangan')" class="btn-action">➕ Ajukan Pemakaian</button>
                             <div class="admin-only" style="display:${isAdmin ? 'block' : 'none'};">
-                                <button onclick="editRuangan(${r.id})" style="color:#2563eb; border:none; background:none; font-size:12px; cursor:pointer; margin-right:5px;">✏️ Edit</button>
-                                <button onclick="deleteRuangan(${r.id})" style="color:#ef4444; border:none; background:none; font-size:12px; cursor:pointer;">🗑️ Hapus</button>
+                                <button onclick="editRuangan('${r.id}')" style="color:#2563eb; border:none; background:none; font-size:12px; cursor:pointer; margin-right:5px;">✏️ Edit</button>
+                                <button onclick="deleteRuangan('${r.id}')" style="color:#ef4444; border:none; background:none; font-size:12px; cursor:pointer;">🗑️ Hapus</button>
                             </div>
                         </div>
                     </div>
@@ -734,11 +767,11 @@
             dataPemakaianRuangan.forEach(p => {
                 tb.innerHTML += `
                     <tr>
-                        <td><strong>${p.pemohon}</strong><br><small>${p.nim || '-'}</small><br><small style="color:#2563eb;">${p.instansi || '-'}</small></td>
-                        <td>${p.ruanganNama}</td>
+                        <td><strong>${p.pemohon || '-'}</strong><br><small>${p.nim || '-'}</small><br><small style="color:#2563eb;">${p.instansi || '-'}</small></td>
+                        <td>${p.ruanganNama || '-'}</td>
                         <td><strong>${p.jumlahPemakai || 1} Orang</strong></td>
-                        <td>${p.tanggal}<br><small>${p.jamMulai} - ${p.jamSelesai} WIB</small></td>
-                        <td><strong>${p.status}</strong></td>
+                        <td>${p.tanggal || '-'}<br><small>${p.jamMulai || ''} - ${p.jamSelesai || ''} WIB</small></td>
+                        <td><strong>${p.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             ${p.status === 'Menunggu' ? `
                                 <button onclick="setStatusRuangan('${p.id}', 'Disetujui')" style="background:#059669; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Setujui</button>
@@ -757,8 +790,10 @@
             const selectMaint = document.getElementById('mm_alat');
             grid.innerHTML = ''; selectAlat.innerHTML = ''; selectMaint.innerHTML = '';
 
-            dataAlat.forEach(a => {
-                selectAlat.innerHTML += `<option value="${a.id}">${a.nama} (${a.jumlah} Unit)</option>`;
+            const keys = Object.keys(dataAlat);
+            keys.forEach(key => {
+                const a = dataAlat[key];
+                selectAlat.innerHTML += `<option value="${a.id}">${a.nama || 'Alat'} (${a.jumlah || 1} Unit)</option>`;
                 selectMaint.innerHTML += `<option value="${a.nama}">${a.nama}</option>`;
 
                 let statusClass = a.status === 'Siap Pakai' ? 'status-ready' : (a.status === 'Sedang Digunakan' ? 'status-busy' : 'status-maintenance');
@@ -772,20 +807,20 @@
                         <div>
                             <div class="card-img-container">
                                 ${imgHTML}
-                                <span class="status-tag ${statusClass}">${a.status}</span>
+                                <span class="status-tag ${statusClass}">${a.status || 'Siap Pakai'}</span>
                             </div>
                             <div class="card-body">
-                                <span class="card-badge">${a.kategori}</span>
-                                <h3>${a.nama}</h3>
-                                <p>📦 Jumlah: ${a.jumlah} Unit</p>
-                                <button onclick="openModalSOP(${a.id})" style="color:#d97706; background:none; border:none; font-size:11px; font-weight:bold; cursor:pointer;">📖 Lihat SOP Penggunaan</button>
+                                <span class="card-badge">${a.kategori || 'Umum'}</span>
+                                <h3>${a.nama || 'Nama Alat'}</h3>
+                                <p>📦 Jumlah: ${a.jumlah || 1} Unit</p>
+                                <button onclick="openModalSOP('${a.id}')" style="color:#d97706; background:none; border:none; font-size:11px; font-weight:bold; cursor:pointer;">📖 Lihat SOP Penggunaan</button>
                             </div>
                         </div>
                         <div class="card-footer">
                             <button onclick="switchTab('pemakaian-alat')" class="btn-action">🩺 Pinjam Alat</button>
                             <div class="admin-only" style="display:${isAdmin ? 'block' : 'none'};">
-                                <button onclick="editAlat(${a.id})" style="color:#2563eb; border:none; background:none; font-size:12px; cursor:pointer; margin-right:5px;">✏️ Edit</button>
-                                <button onclick="deleteAlat(${a.id})" style="color:#ef4444; border:none; background:none; font-size:12px; cursor:pointer;">🗑️ Hapus</button>
+                                <button onclick="editAlat('${a.id}')" style="color:#2563eb; border:none; background:none; font-size:12px; cursor:pointer; margin-right:5px;">✏️ Edit</button>
+                                <button onclick="deleteAlat('${a.id}')" style="color:#ef4444; border:none; background:none; font-size:12px; cursor:pointer;">🗑️ Hapus</button>
                             </div>
                         </div>
                     </div>
@@ -800,11 +835,11 @@
                 let jadwalText = pa.tanggal ? `${pa.tanggal}<br><small>${pa.jamMulai || ''} - ${pa.jamSelesai || ''} WIB</small>` : '-';
                 tb.innerHTML += `
                     <tr>
-                        <td><strong>${pa.pemohon}</strong><br><small>${pa.nim || '-'}</small><br><small style="color:#2563eb;">${pa.instansi || '-'}</small></td>
-                        <td>${pa.alatNama}</td>
+                        <td><strong>${pa.pemohon || '-'}</strong><br><small>${pa.nim || '-'}</small><br><small style="color:#2563eb;">${pa.instansi || '-'}</small></td>
+                        <td>${pa.alatNama || '-'}</td>
                         <td>${pa.jumlah || 1} Unit<br><small>(${pa.jumlahPemakai || 1} Pemakai)</small></td>
                         <td>${jadwalText}</td>
-                        <td><strong>${pa.status}</strong></td>
+                        <td><strong>${pa.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             ${pa.status === 'Menunggu' ? `
                                 <button onclick="setStatusAlat('${pa.id}', 'Disetujui')" style="background:#059669; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Setujui</button>
@@ -822,11 +857,11 @@
             dataMaintenance.forEach(m => {
                 tb.innerHTML += `
                     <tr>
-                        <td>${m.tanggal}</td>
-                        <td><strong>${m.alatNama}</strong></td>
-                        <td>${m.jenis}</td>
-                        <td>${m.teknisi}</td>
-                        <td><strong>${m.kondisi}</strong></td>
+                        <td>${m.tanggal || '-'}</td>
+                        <td><strong>${m.alatNama || '-'}</strong></td>
+                        <td>${m.jenis || '-'}</td>
+                        <td>${m.teknisi || '-'}</td>
+                        <td><strong>${m.kondisi || '-'}</strong></td>
                         <td><small>${m.catatan || '-'}</small></td>
                     </tr>
                 `;
@@ -872,8 +907,8 @@
 
         function handlePengajuanRuangan(e) {
             e.preventDefault();
-            const rId = parseInt(document.getElementById('p_ruangan').value);
-            const rObj = dataRuangan.find(x => x.id === rId);
+            const rId = document.getElementById('p_ruangan').value;
+            const rObj = dataRuangan[rId];
             const tgl = document.getElementById('p_tanggal').value;
             const jamMulai = document.getElementById('p_jam_mulai').value;
             const jamSelesai = document.getElementById('p_jam_selesai').value;
@@ -888,235 +923,4 @@
                 ruanganNama: rObj ? rObj.nama : 'Ruangan',
                 jumlahPemakai: parseInt(document.getElementById('p_jumlah_pemakai').value) || 1,
                 tanggal: tgl,
-                jamMulai: jamMulai,
-                jamSelesai: jamSelesai,
-                status: 'Menunggu'
-            };
-
-            db.ref('roomBookings/' + newId).set(newObj, (err) => {
-                if(!err) alert('Pengajuan pemakaian ruangan berhasil dikirim!');
-            });
-        }
-
-        function handlePengajuanAlat(e) {
-            e.preventDefault();
-            const aId = parseInt(document.getElementById('pa_alat').value);
-            const aObj = dataAlat.find(x => x.id === aId);
-            const tgl = document.getElementById('pa_tanggal').value;
-            const jamMulai = document.getElementById('pa_jam_mulai').value;
-            const jamSelesai = document.getElementById('pa_jam_selesai').value;
-
-            const newId = 'UL_' + Date.now();
-            const newObj = {
-                id: newId,
-                pemohon: document.getElementById('pa_nama').value,
-                nim: document.getElementById('pa_nim').value,
-                instansi: document.getElementById('pa_instansi').value,
-                alatId: aId,
-                alatNama: aObj ? aObj.nama : 'Alat',
-                jumlah: parseInt(document.getElementById('pa_jumlah').value) || 1,
-                jumlahPemakai: parseInt(document.getElementById('pa_jumlah_pemakai').value) || 1,
-                tanggal: tgl,
-                jamMulai: jamMulai,
-                jamSelesai: jamSelesai,
-                status: 'Menunggu'
-            };
-
-            db.ref('usageLogs/' + newId).set(newObj, (err) => {
-                if(!err) alert('Pengajuan peminjaman alat berhasil dikirim!');
-            });
-        }
-
-        function setStatusRuangan(id, st) {
-            db.ref('roomBookings/' + id + '/status').set(st);
-        }
-
-        function setStatusAlat(id, st) {
-            db.ref('usageLogs/' + id + '/status').set(st);
-        }
-
-        function openModalSOP(id) {
-            const a = dataAlat.find(x => x.id === id);
-            if(a) {
-                document.getElementById('sopTitle').innerText = a.nama;
-                document.getElementById('sopContent').innerText = a.sop || 'Belum ada SOP.';
-                openModal('modalSOP');
-            }
-        }
-
-        function openModalRuangan() {
-            document.getElementById('modalRuanganTitle').innerText = 'Tambah Ruangan';
-            document.getElementById('mr_id').value = '';
-            document.getElementById('mr_nama').value = '';
-            document.getElementById('mr_kapasitas').value = '';
-            document.getElementById('mr_fasilitas').value = '';
-            document.getElementById('mr_foto').value = '';
-            openModal('modalRuangan');
-        }
-
-        function editRuangan(id) {
-            const r = dataRuangan.find(x => x.id === id);
-            if(r) {
-                document.getElementById('modalRuanganTitle').innerText = 'Edit Ruangan';
-                document.getElementById('mr_id').value = r.id;
-                document.getElementById('mr_nama').value = r.nama;
-                document.getElementById('mr_kapasitas').value = r.kapasitas;
-                document.getElementById('mr_fasilitas').value = Array.isArray(r.fasilitas) ? r.fasilitas.join(', ') : r.fasilitas;
-                document.getElementById('mr_foto').value = r.foto || '';
-                document.getElementById('mr_status').value = r.status;
-                openModal('modalRuangan');
-            }
-        }
-
-        function saveRuangan(e) {
-            e.preventDefault();
-            const id = document.getElementById('mr_id').value;
-            const item = {
-                id: id ? parseInt(id) : Date.now(),
-                nama: document.getElementById('mr_nama').value,
-                kapasitas: document.getElementById('mr_kapasitas').value,
-                fasilitas: document.getElementById('mr_fasilitas').value.split(',').map(s => s.trim()),
-                foto: document.getElementById('mr_foto').value,
-                status: document.getElementById('mr_status').value
-            };
-
-            if(id) {
-                const idx = dataRuangan.findIndex(x => x.id === parseInt(id));
-                dataRuangan[idx] = item;
-            } else {
-                dataRuangan.push(item);
-            }
-            db.ref('rooms').set(dataRuangan);
-            closeModal('modalRuangan');
-        }
-
-        function deleteRuangan(id) {
-            if(confirm('Hapus ruangan ini?')) { 
-                dataRuangan = dataRuangan.filter(x => x.id !== id); 
-                db.ref('rooms').set(dataRuangan);
-            }
-        }
-
-        function openModalAlat() {
-            document.getElementById('modalAlatTitle').innerText = 'Tambah Alat';
-            document.getElementById('ma_id').value = '';
-            document.getElementById('ma_nama').value = '';
-            document.getElementById('ma_jumlah').value = 1;
-            document.getElementById('ma_foto').value = '';
-            document.getElementById('ma_sop').value = '';
-            openModal('modalAlat');
-        }
-
-        function editAlat(id) {
-            const a = dataAlat.find(x => x.id === id);
-            if(a) {
-                document.getElementById('modalAlatTitle').innerText = 'Edit Alat';
-                document.getElementById('ma_id').value = a.id;
-                document.getElementById('ma_nama').value = a.nama;
-                document.getElementById('ma_kategori').value = a.kategori;
-                document.getElementById('ma_jumlah').value = a.jumlah;
-                document.getElementById('ma_foto').value = a.foto || '';
-                document.getElementById('ma_status').value = a.status;
-                document.getElementById('ma_sop').value = a.sop || '';
-                openModal('modalAlat');
-            }
-        }
-
-        function saveAlat(e) {
-            e.preventDefault();
-            const id = document.getElementById('ma_id').value;
-            const item = {
-                id: id ? parseInt(id) : Date.now(),
-                nama: document.getElementById('ma_nama').value,
-                kategori: document.getElementById('ma_kategori').value,
-                jumlah: parseInt(document.getElementById('ma_jumlah').value) || 1,
-                foto: document.getElementById('ma_foto').value,
-                status: document.getElementById('ma_status').value,
-                sop: document.getElementById('ma_sop').value
-            };
-
-            if(id) {
-                const idx = dataAlat.findIndex(x => x.id === parseInt(id));
-                dataAlat[idx] = item;
-            } else {
-                dataAlat.push(item);
-            }
-            db.ref('equipments').set(dataAlat);
-            closeModal('modalAlat');
-        }
-
-        function deleteAlat(id) {
-            if(confirm('Hapus alat ini?')) { 
-                dataAlat = dataAlat.filter(x => x.id !== id); 
-                db.ref('equipments').set(dataAlat);
-            }
-        }
-
-        function openModalMaintenance() {
-            document.getElementById('mm_tanggal').valueAsDate = new Date();
-            openModal('modalMaintenance');
-        }
-
-        function saveMaintenance(e) {
-            e.preventDefault();
-            const newId = 'ML_' + Date.now();
-            const newObj = {
-                id: newId,
-                tanggal: document.getElementById('mm_tanggal').value,
-                alatNama: document.getElementById('mm_alat').value,
-                jenis: document.getElementById('mm_jenis').value,
-                teknisi: document.getElementById('mm_teknisi').value,
-                kondisi: document.getElementById('mm_kondisi').value,
-                catatan: document.getElementById('mm_catatan').value
-            };
-            db.ref('maintenanceLogs/' + newId).set(newObj);
-            closeModal('modalMaintenance');
-        }
-
-        function openModalKontak() {
-            const container = document.getElementById('containerFormKontak');
-            container.innerHTML = '';
-            dataKontak.forEach((c, i) => {
-                container.innerHTML += `
-                    <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1;">
-                        <span style="font-size:12px; font-weight:bold; color:#002B49;">👤 Pengelola #${i+1}</span>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
-                            <input type="text" id="edit_jabatan_${i}" value="${c.jabatan||''}" placeholder="Jabatan" class="form-control">
-                            <input type="text" id="edit_nama_${i}" value="${c.nama||''}" placeholder="Nama Lengkap" class="form-control">
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
-                            <input type="text" id="edit_wa_${i}" value="${c.wa||''}" placeholder="No WA (628...)" class="form-control">
-                            <input type="text" id="edit_email_${i}" value="${c.email||''}" placeholder="Email" class="form-control">
-                        </div>
-                        <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto / Link Google Drive" class="form-control" style="margin-top:6px;">
-                    </div>
-                `;
-            });
-            openModal('modalKontak');
-        }
-
-        function saveKontak(e) {
-            e.preventDefault();
-            dataKontak.forEach((c, i) => {
-                c.jabatan = document.getElementById(`edit_jabatan_${i}`).value.trim();
-                c.nama = document.getElementById(`edit_nama_${i}`).value.trim();
-                c.wa = document.getElementById(`edit_wa_${i}`).value.trim();
-                c.email = document.getElementById(`edit_email_${i}`).value.trim();
-                c.foto = document.getElementById(`edit_foto_${i}`).value.trim();
-            });
-            db.ref('kontak').set(dataKontak);
-            closeModal('modalKontak');
-            alert('Informasi kontak & foto pengelola berhasil diperbarui!');
-        }
-
-        function cetakLaporan(judul) {
-            if(!isAdmin) { alert('Hanya Admin yang dapat melakukan cetak PDF.'); return; }
-            window.print();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initRealtimeSync();
-        });
-    </script>
-</body>
-</html>
+                jamM
