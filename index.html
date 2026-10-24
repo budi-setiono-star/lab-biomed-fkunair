@@ -107,6 +107,11 @@
 
         .upload-section { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px; margin-top: 4px; }
         .preview-img-box { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #cbd5e1; }
+        
+        .action-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .btn-approve { background: #059669; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .btn-reject { background: #d97706; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .btn-delete { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -543,7 +548,6 @@
             return url;
         }
 
-        // KOMPRESI GAMBAR OTOMATIS AGAR TIDAK TERLALU BESAR
         function handleFileSelectCompressed(event, targetInputId, previewImgId) {
             const file = event.target.files[0];
             if (!file) return;
@@ -676,13 +680,25 @@
 
             db.ref('roomBookings').on('value', (snapshot) => {
                 const val = snapshot.val();
-                dataPemakaianRuangan = val ? Object.values(val) : [];
+                if(!val) {
+                    dataPemakaianRuangan = [];
+                } else if(Array.isArray(val)) {
+                    dataPemakaianRuangan = val.filter(Boolean);
+                } else {
+                    dataPemakaianRuangan = Object.keys(val).map(k => ({ ...val[k], id: k }));
+                }
                 renderPemakaianRuangan();
             });
 
             db.ref('usageLogs').on('value', (snapshot) => {
                 const val = snapshot.val();
-                dataPemakaianAlat = val ? Object.values(val) : [];
+                if(!val) {
+                    dataPemakaianAlat = [];
+                } else if(Array.isArray(val)) {
+                    dataPemakaianAlat = val.filter(Boolean);
+                } else {
+                    dataPemakaianAlat = Object.keys(val).map(k => ({ ...val[k], id: k }));
+                }
                 renderPemakaianAlat();
             });
 
@@ -851,10 +867,11 @@
                         <td>${p.tanggal || '-'}<br><small>${p.jamMulai || ''} - ${p.jamSelesai || ''} WIB</small></td>
                         <td><strong>${p.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
-                            ${p.status === 'Menunggu' ? `
-                                <button onclick="setStatusRuangan('${p.id}', 'Disetujui')" style="background:#059669; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Setujui</button>
-                                <button onclick="setStatusRuangan('${p.id}', 'Ditolak')" style="background:#dc2626; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Tolak</button>
-                            ` : '-'}
+                            <div class="action-btn-group">
+                                <button onclick="setStatusRuangan('${p.id}', 'Disetujui')" class="btn-approve" title="Setujui Pengajuan">Setuju</button>
+                                <button onclick="setStatusRuangan('${p.id}', 'Ditolak')" class="btn-reject" title="Tolak Pengajuan">Tolak</button>
+                                <button onclick="deletePemakaianRuangan('${p.id}')" class="btn-delete" title="Hapus Data">Hapus</button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -919,10 +936,11 @@
                         <td>${jadwalText}</td>
                         <td><strong>${pa.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
-                            ${pa.status === 'Menunggu' ? `
-                                <button onclick="setStatusAlat('${pa.id}', 'Disetujui')" style="background:#059669; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Setujui</button>
-                                <button onclick="setStatusAlat('${pa.id}', 'Ditolak')" style="background:#dc2626; color:white; border:none; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer;">Tolak</button>
-                            ` : '-'}
+                            <div class="action-btn-group">
+                                <button onclick="setStatusAlat('${pa.id}', 'Disetujui')" class="btn-approve" title="Setujui Pengajuan">Setuju</button>
+                                <button onclick="setStatusAlat('${pa.id}', 'Ditolak')" class="btn-reject" title="Tolak Pengajuan">Tolak</button>
+                                <button onclick="deletePemakaianAlat('${pa.id}')" class="btn-delete" title="Hapus Data">Hapus</button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1044,8 +1062,20 @@
             db.ref('roomBookings/' + id + '/status').set(st);
         }
 
+        function deletePemakaianRuangan(id) {
+            if(confirm('Hapus riwayat/pengajuan pemakaian ruangan ini?')) {
+                db.ref('roomBookings/' + id).remove();
+            }
+        }
+
         function setStatusAlat(id, st) {
             db.ref('usageLogs/' + id + '/status').set(st);
+        }
+
+        function deletePemakaianAlat(id) {
+            if(confirm('Hapus riwayat/pengajuan peminjaman alat ini?')) {
+                db.ref('usageLogs/' + id).remove();
+            }
         }
 
         function openModalSOP(id) {
