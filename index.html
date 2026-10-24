@@ -10,14 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- html2pdf.js CDN untuk Download PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- FullCalendar CDN untuk Fitur Kalender Pemakaian Ruangan -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tab-btn.active { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: 700; }
-        .fc-event { cursor: pointer; border-radius: 6px; padding: 2px 4px; font-size: 0.75rem; }
+        .cal-day { min-h: 80px; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
@@ -95,24 +91,37 @@
 
         <!-- PANEL 2: PEMAKAIAN RUANGAN & KALENDER -->
         <section id="panel-pinjam-ruangan" class="hidden space-y-6">
+            <!-- KALENDER PEMAKAIAN RUANGAN -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b pb-3">
                     <div>
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-days text-indigo-600"></i> Kalender Pemakaian Ruangan
+                            <i class="fa-solid fa-calendar-days text-indigo-600"></i> Kalender Jadwal Pemakaian Ruangan
                         </h3>
-                        <p class="text-xs text-slate-500">Jadwal penggunaan ruangan praktikum & penelitian yang telah diajukan</p>
+                        <p class="text-xs text-slate-500">Jadwal penggunaan ruangan yang telah disetujui/diajukan</p>
                     </div>
-                    <div class="flex items-center gap-3 text-xs font-semibold">
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span> Disetujui</span>
-                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-amber-500 rounded-full inline-block"></span> Menunggu</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="changeMonth(-1)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold text-slate-700"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="cal-month-title" class="text-sm font-bold text-indigo-950 min-w-[120px] text-center"></span>
+                        <button onclick="changeMonth(1)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold text-slate-700"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
-                <div id="room-calendar" class="min-h-[450px]"></div>
+
+                <!-- Grid Kalender -->
+                <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-600 mb-1 bg-slate-100 py-2 rounded-lg">
+                    <div class="text-rose-600">Ming</div>
+                    <div>Sen</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kam</div>
+                    <div>Jum</div>
+                    <div class="text-indigo-600">Sab</div>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-xs"></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Form Pinjam Ruangan -->
+                <!-- Form Pemakaian Ruangan -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
                     <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
                         <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Form Pemakaian Ruangan
@@ -172,12 +181,9 @@
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Pemakaian Ruangan
                         </h3>
-                        <button onclick="exportPDF('print-pinjam-ruangan', 'Rekapitulasi_Pemakaian_Ruangan')" class="admin-only hidden bg-indigo-900 hover:bg-indigo-950 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf"></i> Download PDF
-                        </button>
                     </div>
 
-                    <div id="print-pinjam-ruangan" class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -219,15 +225,10 @@
                     <button id="add-equipment-btn" onclick="openEquipmentModal()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> Tambah Alat
                     </button>
-                    <button onclick="exportPDF('print-katalog', 'Katalog_Alat_Lab_Biomed')" class="admin-only hidden bg-indigo-900 hover:bg-indigo-950 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-file-pdf"></i> Download PDF
-                    </button>
                 </div>
             </div>
 
-            <div id="print-katalog" class="p-2">
-                <div id="katalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
+            <div id="katalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <!-- PANEL 4: PEMAKAIAN ALAT -->
@@ -298,12 +299,9 @@
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Pemakaian Alat
                         </h3>
-                        <button onclick="exportPDF('print-pemakaian', 'Rekapitulasi_Pemakaian_Alat')" class="admin-only hidden bg-indigo-900 hover:bg-indigo-950 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf"></i> Download PDF
-                        </button>
                     </div>
 
-                    <div id="print-pemakaian" class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -336,686 +334,12 @@
                         <button onclick="openMaintenanceModal()" class="admin-only hidden bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
                             <i class="fa-solid fa-plus"></i> Tambah Catatan
                         </button>
-                        <button onclick="exportPDF('print-maintenance', 'Log_Perawatan_Alat')" class="admin-only hidden bg-indigo-900 hover:bg-indigo-950 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
-                            <i class="fa-solid fa-file-pdf"></i> Download PDF
-                        </button>
                     </div>
                 </div>
 
-                <div id="print-maintenance" class="overflow-x-auto">
+                <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                                 <th class="p-3">Tanggal Pelaksanaan</th>
                                 <th class="p-3">Nama Alat</th>
-                                <th class="p-3">Jenis Kegiatan</th>
-                                <th class="p-3">Keterangan / Teknisi</th>
-                                <th class="p-3">Status pengerjaan</th>
-                                <th class="p-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="maintenance-table-body" class="divide-y divide-slate-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- PANEL 6: KONTAK PENGELOLA -->
-        <section id="panel-kontak" class="hidden space-y-6">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto">
-                <h3 class="text-xl font-extrabold text-indigo-950 mb-6 text-center border-b pb-4">
-                    Pengelola Laboratorium Biologi Kedokteran FK UNAIR
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 text-center">
-                        <div class="w-16 h-16 bg-indigo-900 text-amber-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3 shadow-md">
-                            <i class="fa-solid fa-user-doctor"></i>
-                        </div>
-                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full">Penanggung Jawab</span>
-                        <h4 class="font-bold text-slate-800 text-sm mt-3">Agustinus, dr., Sp.And., Subsp.F.E.R.(K)</h4>
-                        <p class="text-xs text-slate-500 mt-1">Laboratorium Biologi Kedokteran FK UNAIR</p>
-                    </div>
-
-                    <div class="p-5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-center">
-                        <div class="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-3 shadow-md">
-                            <i class="fa-solid fa-user-gear"></i>
-                        </div>
-                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">Pengelola Laboratorium</span>
-                        <h4 class="font-bold text-slate-800 text-sm mt-3">Budi Setiono, S.Si.</h4>
-                        <p class="text-xs text-slate-500 mt-1 mb-3">Teknisi & Pengelola Alat Lab</p>
-                        <a href="https://wa.me/6285222974300" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition shadow-sm">
-                            <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp: 085222974300
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- MODAL AUTHENTICATION ADMIN -->
-    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
-                <i class="fa-solid fa-shield-halved text-indigo-600"></i> Login Admin
-            </h3>
-            <form onsubmit="handleAuth(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
-                    <input type="text" id="auth-username" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
-                    <input type="password" id="auth-password" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="toggleAuthModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Masuk</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL SOP ALAT -->
-    <div id="modal-sop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 id="sop-modal-title" class="text-lg font-bold text-slate-800">SOP Alat</h3>
-                <button onclick="closeSOPModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div id="print-sop-content" class="overflow-y-auto flex-grow space-y-4 pr-2 text-xs">
-                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                    <h4 class="font-bold text-indigo-900 mb-1"><i class="fa-solid fa-bullseye"></i> 1. Tujuan</h4>
-                    <p id="sop-tujuan" class="text-slate-700 leading-relaxed"></p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-vial"></i> 2. Alat & Bahan</h4>
-                    <p id="sop-bahan" class="text-slate-700 leading-relaxed"></p>
-                </div>
-                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-                    <h4 class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-list-ol"></i> 3. Prosedur Kerja</h4>
-                    <p id="sop-prosedur" class="text-slate-700 leading-relaxed whitespace-pre-line"></p>
-                </div>
-                <div class="bg-rose-50 p-3 rounded-lg border border-rose-100">
-                    <h4 class="font-bold text-rose-900 mb-1"><i class="fa-solid fa-triangle-exclamation"></i> 4. Keselamatan Kerja (K3)</h4>
-                    <p id="sop-k3" class="text-slate-700 leading-relaxed"></p>
-                </div>
-            </div>
-            <div class="border-t pt-4 mt-4 flex justify-between items-center">
-                <button onclick="exportPDF('print-sop-content', 'SOP_Alat_Lab')" class="admin-only hidden bg-indigo-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                    <i class="fa-solid fa-file-pdf"></i> Download SOP PDF
-                </button>
-                <button onclick="closeSOPModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold">Tutup</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT/TAMBAH ALAT -->
-    <div id="modal-equipment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 id="equipment-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Alat Laboratory</h3>
-            <form onsubmit="handleEquipmentSubmit(event)" class="space-y-4">
-                <input type="hidden" id="eq-id">
-                <input type="hidden" id="eq-firebase-key">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Alat Lab</label>
-                    <input type="text" id="eq-name" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
-                        <select id="eq-category" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Mikroskopi">Mikroskopi</option>
-                            <option value="Biologi Molekuler">Biologi Molekuler</option>
-                            <option value="Preparasi Sampel">Preparasi Sampel</option>
-                            <option value="Analisis DNA">Analisis DNA</option>
-                            <option value="Inkubasi">Inkubasi</option>
-                            <option value="Fasilitas Khusus">Fasilitas Khusus</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
-                        <select id="eq-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Tersedia">Tersedia</option>
-                            <option value="Sedang Dipakai">Sedang Dipakai</option>
-                            <option value="Perawatan">Perawatan</option>
-                            <option value="Rusak">Rusak</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
-                    <label class="block text-xs font-bold text-slate-700">Foto / Gambar Alat</label>
-                    <input type="file" id="eq-image-file" accept="image/*" onchange="previewImageFile(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700">
-                    <p class="text-[10px] text-slate-500 font-semibold mt-1">Atau masukkan Link Google Drive / Image URL:</p>
-                    <input type="text" id="eq-image-url" placeholder="https://drive.google.com/file/d/..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
-                    <input type="hidden" id="eq-image-base64">
-                </div>
-
-                <div class="border-t pt-3 space-y-3">
-                    <h4 class="font-bold text-xs text-indigo-900">Detail SOP Alat:</h4>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600">Tujuan</label>
-                        <textarea id="eq-sop-tujuan" rows="2" class="w-full border rounded-lg p-2 text-xs"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600">Alat & Bahan</label>
-                        <textarea id="eq-sop-bahan" rows="2" class="w-full border rounded-lg p-2 text-xs"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600">Prosedur Kerja</label>
-                        <textarea id="eq-sop-prosedur" rows="3" class="w-full border rounded-lg p-2 text-xs"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600">K3</label>
-                        <textarea id="eq-sop-k3" rows="2" class="w-full border rounded-lg p-2 text-xs"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeEquipmentModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Alat</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT/TAMBAH RUANGAN -->
-    <div id="modal-room" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 id="room-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Ruangan Laboratory</h3>
-            <form onsubmit="handleRoomSubmit(event)" class="space-y-4">
-                <input type="hidden" id="room-id">
-                <input type="hidden" id="room-firebase-key">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ruangan Lab</label>
-                    <input type="text" id="room-name" required placeholder="Contoh: Lab Biologi Molekuler Utama" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kapasitas (Orang)</label>
-                        <input type="number" id="room-capacity" min="1" required placeholder="Contoh: 30" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
-                        <select id="room-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Tersedia">Tersedia</option>
-                            <option value="Sedang Dipakai">Sedang Dipakai</option>
-                            <option value="Perawatan">Perawatan</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Fasilitas Utama</label>
-                    <textarea id="room-facilities" rows="2" placeholder="Contoh: AC, AC Laminar Air Flow, Centrifuge, Mikroskop, Wi-Fi" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-
-                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
-                    <label class="block text-xs font-bold text-slate-700">Foto / Gambar Ruangan</label>
-                    <input type="file" id="room-image-file" accept="image/*" onchange="previewRoomImageFile(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700">
-                    <p class="text-[10px] text-slate-500 font-semibold mt-1">Atau masukkan Link Google Drive / Image URL:</p>
-                    <input type="text" id="room-image-url" placeholder="https://drive.google.com/file/d/..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
-                    <input type="hidden" id="room-image-base64">
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeRoomModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Ruangan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL MAINTENANCE LOG -->
-    <div id="modal-maintenance" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Tambah Catatan Maintenance</h3>
-            <form onsubmit="handleMaintenanceSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat</label>
-                    <select id="maint-equipment" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Pelaksanaan <span class="text-rose-500">*</span></label>
-                    <input type="date" id="maint-date" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kegiatan</label>
-                    <input type="text" id="maint-type" required placeholder="Kalibrasi / Pemeliharaan / Perbaikan..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Status Pengerjaan Awal</label>
-                    <select id="maint-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                        <option value="Sedang Dikerjakan">Sedang Dikerjakan</option>
-                        <option value="Selesai">Selesai</option>
-                        <option value="Rusak">Rusak</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan / Teknisi</label>
-                    <textarea id="maint-desc" rows="2" required placeholder="Detail pekerjaan maintenance..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeMaintenanceModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold">Simpan Log</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT & LOGIKA SISTEM UTAMA -->
-    <script>
-        const initialRooms = [
-            { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
-            { id: "rm2", firebaseKey: "rm2", name: "Laboratorium Biologi Molekuler & Kultur Sel", capacity: 15, facilities: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80" },
-            { id: "rm3", firebaseKey: "rm3", name: "Ruang Diskusi & Seminar Lab", capacity: 25, facilities: "Smart TV, Sound System, Papan Tulis, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80" }
-        ];
-
-        const initialEquipments = [
-            { id: "eq1", firebaseKey: "eq1", name: "Mikroskop Binokuler Olympus CX21", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80", sop: { tujuan: "Mengamati preparat mikroskopis jaringan/sel.", bahan: "Preparat sampel, minyak imersi, tissue lensa.", prosedur: "1. Hubungkan ke sumber listrik.\n2. Letakkan preparat pada meja objek.\n3. Atur pencahayaan dan fokus pembesaran.", k3: "Gunakan jas lab dan bersihkan lensa setelah pemakaian." } },
-            { id: "eq2", firebaseKey: "eq2", name: "Mikroskop Binokuler Olympus CH20", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80", sop: { tujuan: "Pengamatan sitologi dan mikroorganik.", bahan: "Kaca objek, sampel biologis.", prosedur: "1. Nyalakan saklar daya.\n2. Posisikan lensa obyektif terendah.\n3. Putar makrometer hingga fokus.", k3: "Pegang lengan mikroskop dengan dua tangan saat memindahkan." } },
-            { id: "eq3", firebaseKey: "eq3", name: "Mikroskop Binokuler Nikon", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", sop: { tujuan: "Observasi sampel biologi kedokteran.", bahan: "Preparat, alkohol 70%.", prosedur: "1. Nyalakan lampu LED.\n2. Atur okuler sesuai jarak mata.\n3. Fokuskan objek.", k3: "Pastikan meja objek kering sebelum dan sesudah dipasang sampel." } }
-        ];
-
-        window.rooms = JSON.parse(localStorage.getItem('lab_rooms')) || initialRooms;
-        window.equipments = JSON.parse(localStorage.getItem('lab_equipments')) || initialEquipments;
-        window.roomBookings = JSON.parse(localStorage.getItem('lab_room_bookings')) || [];
-        window.usageLogs = JSON.parse(localStorage.getItem('lab_usage_logs')) || [];
-        window.maintenanceLogs = JSON.parse(localStorage.getItem('lab_maintenance_logs')) || [];
-        window.isAdmin = false;
-        let calendarInstance = null;
-
-        function saveState() {
-            localStorage.setItem('lab_rooms', JSON.stringify(window.rooms));
-            localStorage.setItem('lab_equipments', JSON.stringify(window.equipments));
-            localStorage.setItem('lab_room_bookings', JSON.stringify(window.roomBookings));
-            localStorage.setItem('lab_usage_logs', JSON.stringify(window.usageLogs));
-            localStorage.setItem('lab_maintenance_logs', JSON.stringify(window.maintenanceLogs));
-        }
-
-        function formatGoogleDriveUrl(url) {
-            if (!url) return '';
-            if (url.includes('drive.google.com')) {
-                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
-            }
-            return url;
-        }
-
-        function switchTab(tabName) {
-            ['ruangan', 'pinjam-ruangan', 'katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(t => {
-                const p = document.getElementById(`panel-${t}`); const btn = document.getElementById(`tab-${t}`);
-                if (p) p.classList.add('hidden');
-                if (btn) btn.classList.remove('active');
-            });
-            const activePanel = document.getElementById(`panel-${tabName}`); const activeBtn = document.getElementById(`tab-${tabName}`);
-            if (activePanel) activePanel.classList.remove('hidden');
-            if (activeBtn) activeBtn.classList.add('active');
-
-            if (tabName === 'pinjam-ruangan' && calendarInstance) {
-                setTimeout(() => calendarInstance.render(), 100);
-            }
-        }
-
-        function toggleAuthModal() {
-            if (window.isAdmin) {
-                window.isAdmin = false;
-                updateAdminUI();
-                alert('Anda telah keluar dari mode Admin.');
-            } else {
-                document.getElementById('modal-auth').classList.remove('hidden');
-            }
-        }
-
-        function handleAuth(e) {
-            e.preventDefault();
-            const u = document.getElementById('auth-username').value;
-            const p = document.getElementById('auth-password').value;
-
-            if (u === 'admin' && p === 'SSi.admi') {
-                window.isAdmin = true;
-                updateAdminUI();
-                document.getElementById('modal-auth').classList.add('hidden');
-                document.getElementById('auth-username').value = '';
-                document.getElementById('auth-password').value = '';
-            } else {
-                alert('Username atau Password Admin Salah!');
-            }
-        }
-
-        function updateAdminUI() {
-            const badge = document.getElementById('admin-badge');
-            const btnText = document.getElementById('auth-btn-text');
-            const icon = document.getElementById('auth-icon');
-            const adminElements = document.querySelectorAll('.admin-only, #add-equipment-btn, #add-room-btn');
-
-            if (window.isAdmin) {
-                if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
-                if (btnText) btnText.innerText = 'Logout Admin';
-                if (icon) icon.className = 'fa-solid fa-right-from-bracket';
-                adminElements.forEach(el => el.classList.remove('hidden'));
-            } else {
-                if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
-                if (btnText) btnText.innerText = 'Login Admin';
-                if (icon) icon.className = 'fa-solid fa-lock';
-                adminElements.forEach(el => el.classList.add('hidden'));
-            }
-            renderRuangan();
-            renderKatalog();
-            renderRoomBookingTable();
-            renderUsageTable();
-            renderMaintenanceTable();
-            initCalendar();
-        }
-
-        function renderRuangan() {
-            const grid = document.getElementById('ruangan-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            if ((window.rooms || []).length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 font-semibold"><i class="fa-solid fa-door-closed text-4xl mb-2 block"></i>Belum ada data ruangan laboratorium.</div>';
-                return;
-            }
-
-            window.rooms.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
-
-                const statusBg = {
-                    'Tersedia': 'bg-emerald-100 text-emerald-800',
-                    'Sedang Dipakai': 'bg-amber-100 text-amber-800',
-                    'Perawatan': 'bg-blue-100 text-blue-800'
-                }[item.status] || 'bg-slate-100 text-slate-800';
-
-                const formattedUrl = formatGoogleDriveUrl(item.image);
-                const hasImage = formattedUrl && formattedUrl.trim() !== '';
-
-                card.innerHTML = `
-                    <div>
-                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden flex items-center justify-center">
-                            ${hasImage ? `<img src="${formattedUrl}" alt="${item.name}" class="w-full h-full object-cover">` : `<div class="flex flex-col items-center justify-center text-slate-400 p-4 text-center"><i class="fa-solid fa-building text-4xl text-slate-300 mb-2"></i><span class="text-xs font-semibold text-slate-500">Foto Ruangan Lab</span></div>`}
-                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm ${statusBg}">${item.status}</span>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
-                            <div class="text-xs text-slate-600 flex items-center gap-2">
-                                <i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <span class="font-semibold">${item.capacity} Orang</span>
-                            </div>
-                            <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <strong class="text-slate-700 block mb-0.5"><i class="fa-solid fa-list text-emerald-600 mr-1"></i>Fasilitas:</strong>
-                                ${item.facilities || 'AC, Meja Kerja'}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 pt-0">
-                        ${window.isAdmin ? `
-                            <div class="flex gap-2 pt-2 border-t">
-                                <button onclick="openRoomModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                                <button onclick="deleteRoom('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderKatalog() {
-            const searchEl = document.getElementById('search-input');
-            const catEl = document.getElementById('category-filter');
-            const grid = document.getElementById('katalog-grid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            const search = searchEl ? searchEl.value.toLowerCase() : '';
-            const category = catEl ? catEl.value : 'Semua';
-
-            const filtered = (window.equipments || []).filter(e => {
-                const matchSearch = e.name ? e.name.toLowerCase().includes(search) : false;
-                const matchCat = category === 'Semua' || e.category === category;
-                return matchSearch && matchCat;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 font-semibold"><i class="fa-solid fa-box-open text-4xl mb-2 block"></i>Belum ada data alat laboratorium.</div>';
-                return;
-            }
-
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
-
-                const statusBg = {
-                    'Tersedia': 'bg-emerald-100 text-emerald-800',
-                    'Sedang Dipakai': 'bg-amber-100 text-amber-800',
-                    'Perawatan': 'bg-blue-100 text-blue-800',
-                    'Rusak': 'bg-rose-100 text-rose-800'
-                }[item.status] || 'bg-slate-100 text-slate-800';
-
-                const formattedUrl = formatGoogleDriveUrl(item.image);
-                const hasImage = formattedUrl && formattedUrl.trim() !== '';
-
-                card.innerHTML = `
-                    <div>
-                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden flex items-center justify-center">
-                            ${hasImage ? `<img src="${formattedUrl}" alt="${item.name}" class="w-full h-full object-cover">` : `<div class="flex flex-col items-center justify-center text-slate-400 p-4 text-center"><i class="fa-solid fa-microscope text-4xl text-slate-300 mb-2"></i><span class="text-xs font-semibold text-slate-500">Foto Alat Laboratorium</span></div>`}
-                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm ${statusBg}">${item.status}</span>
-                        </div>
-                        <div class="p-4">
-                            <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${item.category}</span>
-                            <h3 class="font-bold text-slate-800 text-sm mt-2">${item.name}</h3>
-                        </div>
-                    </div>
-                    <div class="p-4 pt-0 space-y-2">
-                        <button onclick="openSOPModal('${item.firebaseKey}')" class="w-full py-1.5 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 border border-indigo-200">
-                            <i class="fa-solid fa-book-open"></i> Lihat SOP
-                        </button>
-                        ${window.isAdmin ? `
-                            <div class="flex gap-2 pt-1 border-t">
-                                <button onclick="openEquipmentModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                                <button onclick="deleteEquipment('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function populateRoomDropdowns() {
-            const select = document.getElementById('booking-room-select');
-            if (!select) return;
-            select.innerHTML = '';
-
-            (window.rooms || []).forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r.firebaseKey || r.id;
-                opt.innerText = `${r.name} (Kap: ${r.capacity} Orang -${r.status})`;
-                select.appendChild(opt);
-            });
-        }
-
-        function populateDropdowns() {
-            const usageSelect = document.getElementById('usage-equipment-select');
-            const maintSelect = document.getElementById('maint-equipment');
-            if (!usageSelect || !maintSelect) return;
-            
-            usageSelect.innerHTML = '';
-            maintSelect.innerHTML = '';
-
-            (window.equipments || []).forEach(e => {
-                const opt1 = document.createElement('option');
-                opt1.value = e.firebaseKey || e.id;
-                opt1.innerText = `${e.name} (${e.status})`;
-                usageSelect.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = e.firebaseKey || e.id;
-                opt2.innerText = e.name;
-                maintSelect.appendChild(opt2);
-            });
-        }
-
-        function openRoomModal(key = null) {
-            const modal = document.getElementById('modal-room');
-            modal.classList.remove('hidden');
-
-            if (key) {
-                const item = window.rooms.find(r => r.firebaseKey === key || r.id === key);
-                if (!item) return;
-
-                document.getElementById('room-modal-title').innerText = 'Edit Detail Ruangan';
-                document.getElementById('room-id').value = item.id || '';
-                document.getElementById('room-firebase-key').value = item.firebaseKey || key;
-                document.getElementById('room-name').value = item.name || '';
-                document.getElementById('room-capacity').value = item.capacity || '';
-                document.getElementById('room-status').value = item.status || 'Tersedia';
-                document.getElementById('room-facilities').value = item.facilities || '';
-                document.getElementById('room-image-url').value = (item.image && !item.image.startsWith('data:')) ? item.image : '';
-                document.getElementById('room-image-base64').value = (item.image && item.image.startsWith('data:')) ? item.image : '';
-            } else {
-                document.getElementById('room-modal-title').innerText = 'Tambah Ruangan Lab Baru';
-                document.getElementById('room-id').value = '';
-                document.getElementById('room-firebase-key').value = '';
-                document.getElementById('room-name').value = '';
-                document.getElementById('room-capacity').value = '';
-                document.getElementById('room-facilities').value = '';
-                document.getElementById('room-image-url').value = '';
-                document.getElementById('room-image-base64').value = '';
-            }
-        }
-
-        function closeRoomModal() { document.getElementById('modal-room').classList.add('hidden'); }
-
-        function handleRoomSubmit(e) {
-            e.preventDefault();
-            const key = document.getElementById('room-firebase-key').value;
-            const name = document.getElementById('room-name').value;
-            const capacity = document.getElementById('room-capacity').value;
-            const status = document.getElementById('room-status').value;
-            const facilities = document.getElementById('room-facilities').value;
-            const imgUrl = document.getElementById('room-image-url').value;
-            const imgBase64 = document.getElementById('room-image-base64').value;
-            const image = imgBase64 || imgUrl || '';
-
-            if (key) {
-                const index = window.rooms.findIndex(r => r.firebaseKey === key || r.id === key);
-                if (index !== -1) {
-                    window.rooms[index] = { ...window.rooms[index], name, capacity, status, facilities, image };
-                }
-            } else {
-                const newKey = 'rm' + Date.now();
-                window.rooms.push({ id: newKey, firebaseKey: newKey, name, capacity, status, facilities, image });
-            }
-
-            saveState();
-            renderRuangan();
-            populateRoomDropdowns();
-            closeRoomModal();
-            alert('Data ruangan berhasil disimpan!');
-        }
-
-        function deleteRoom(key) {
-            if (confirm('Apakah Anda yakin ingin menghapus ruangan ini dari katalog?')) {
-                window.rooms = window.rooms.filter(r => r.firebaseKey !== key && r.id !== key);
-                saveState();
-                renderRuangan();
-                populateRoomDropdowns();
-            }
-        }
-
-        // DETEKSI BENTROK JADWAL RUANGAN OTOMATIS
-        function handleRoomBookingSubmit(e) {
-            e.preventDefault();
-            const roomId = document.getElementById('booking-room-select').value;
-            const borrower = document.getElementById('booking-borrower').value;
-            const people = document.getElementById('booking-people').value || 1;
-            const dept = document.getElementById('booking-dept').value;
-            const purpose = document.getElementById('booking-purpose').value;
-            const dateVal = document.getElementById('booking-date').value;
-            const startTime = document.getElementById('booking-start-time').value;
-            const endTime = document.getElementById('booking-end-time').value;
-
-            if (startTime >= endTime) {
-                alert('Jam selesai pemakaian harus lebih besar dari jam mulai!');
-                return;
-            }
-
-            const room = window.rooms.find(r => r.id === roomId || r.firebaseKey === roomId);
-            const targetRoomName = room ? room.name : 'Ruangan Lab';
-
-            let formattedDate = dateVal;
-            if (dateVal) {
-                const parts = dateVal.split('-');
-                if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`; }  const isClash = window.roomBookings.some(booking => { if (booking.roomName !== targetRoomName \vert{}\vert{} booking.status === 'Ditolak') return false;  let bookingIsoDate = booking.rawDate; if (!bookingIsoDate && booking.date) { const p = booking.date.split('/'); if (p.length === 3) bookingIsoDate = `${p[2]}-${p[1]}-${p[0]}`;
-                }
-
-                if (bookingIsoDate !== dateVal) return false;
-
-                const [bStart, bEnd] = (booking.timeSchedule || '').replace(' WIB', '').split(' - ');
-                if (!bStart || !bEnd) return false;
-
-                return (startTime < bEnd && endTime > bStart);
-            });
-
-            if (isClash) {
-                alert(`PENGAJUAN DITOLAK OTOMATIS!\nJadwal pada ${targetRoomName} untuk tanggal${formattedDate} jam ${startTime} -${endTime} WIB sudah terisi oleh peminjaman lain.`);
-                return;
-            }
-
-            const newBooking = {
-                firebaseKey: 'rb' + Date.now(),
-                rawDate: dateVal,
-                startTime: startTime,
-                endTime: endTime,
-                date: formattedDate || new Date().toLocaleDateString('id-ID'),
-                timeSchedule: `${startTime} -${endTime} WIB`,
-                roomName: targetRoomName,
-                peopleCount: people,
-                borrower: `${borrower} (${dept})`,
-                purpose,
-                status: 'Menunggu Persetujuan'
-            };
-
-            window.roomBookings.unshift(newBooking);
-            saveState();
-            renderRoomBookingTable();
-            initCalendar();
-            e.target.reset();
-            alert('Permohonan pemakaian ruangan berhasil diajukan!');
-        }
-
-        function renderRoomBookingTable() {
-            const tbody = document.getElementById('room-booking-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if ((window.roomBookings || []).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada riwayat pemakaian ruangan.</td></tr>';
-                return;
-            }
-
-            window.roomBookings.forEach(log => {
-                const tr = document.createElement('tr');
-                const badgeClass = {
-                    'Menunggu Persetujuan': 'bg-amber-100 text-amber-800',
-                    'Disetujui': 'bg-emerald-100 text-emerald-800',
-                    'Selesai': 'bg-slate-100 text-slate-700'
-                }[log.status] || 'bg-slate-100';
-
-                const scheduleDisplay = `<div class="font-bold text-slate-800">${log.date}</div><div class="text-[10px] text-indigo-600 font-semibold"><i class="fa-regular fa-clock mr-1"></i>${log.timeSchedule}</div>`;
-                const roomDisplay = `<div class="font-semibold text-slate-800">${log.roomName}</div>`;
-                const borrowerDisplay = `<div class="font-medium text-slate-800">${log.borrower}</div><div class="text-[10px] text-slate-500"><i class="fa-solid fa-users mr-1"></i>Jumlah: <span class="font-bold text-emerald-700">${log.peopleCount || 1} Orang</span></div>`;
-
-                tr.innerHTML = `
-                    <td class="p-3">${scheduleDisplay}</td>
-                    <td class="p-3">${roomDisplay}</td>
-                    <td class="p-3">${borrowerDisplay}</td>
-                    <td class="p-3">${log.purpose}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${log.status}</span></td>
-                    <td class="p-3 text-right">
-                        ${window.isAdmin ? `
-                            <div class="flex justify-end gap-1">
-                                ${log.status === 'Menunggu Persetujuan' ? `<button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 text-white px-2 py-0.5 rounded
