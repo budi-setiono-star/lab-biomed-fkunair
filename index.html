@@ -764,9 +764,11 @@
                 isAdmin = true;
                 updateAdminUI();
                 closeModal('modalLogin');
+                document.getElementById('adminPIN').value = '';
                 alert('Berhasil Login sebagai Admin!');
             } else {
-                alert('Password Salah! Gunakan: SSi.admin');
+                alert('Password yang Anda masukkan salah!');
+                document.getElementById('adminPIN').value = '';
             }
         }
 
