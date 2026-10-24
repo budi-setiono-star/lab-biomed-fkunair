@@ -111,6 +111,7 @@
         .action-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
         .btn-approve { background: #059669; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
         .btn-reject { background: #d97706; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .btn-edit-sm { background: #2563eb; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
         .btn-delete { background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
@@ -368,6 +369,7 @@
                             <th>Teknisi / Vendor</th>
                             <th>Kondisi Hasil</th>
                             <th>Catatan</th>
+                            <th class="admin-only">Aksi Admin</th>
                         </tr>
                     </thead>
                     <tbody id="tabelMaintenance"></tbody>
@@ -491,8 +493,9 @@
 
     <div id="modalMaintenance" class="modal">
         <div class="modal-content">
-            <div class="modal-header">Input Maintenance Log</div>
+            <div id="modalMaintTitle" class="modal-header">Input Maintenance Log</div>
             <form onsubmit="saveMaintenance(event)">
+                <input type="hidden" id="mm_id">
                 <div class="form-group"><label>Tanggal</label><input type="date" id="mm_tanggal" required class="form-control"></div>
                 <div class="form-group"><label>Pilih Alat</label><select id="mm_alat" required class="form-control"></select></div>
                 <div class="form-group"><label>Jenis Pekerjaan</label><input type="text" id="mm_jenis" required class="form-control"></div>
@@ -501,6 +504,7 @@
                     <select id="mm_kondisi" class="form-control">
                         <option value="Normal / Baik">Normal / Baik</option>
                         <option value="Perlu Perbaikan">Perlu Perbaikan</option>
+                        <option value="Selesai (Maintenance)">Selesai (Maintenance)</option>
                         <option value="Rusak Berat">Rusak Berat</option>
                     </select>
                 </div>
@@ -704,7 +708,13 @@
 
             db.ref('maintenanceLogs').on('value', (snapshot) => {
                 const val = snapshot.val();
-                dataMaintenance = val ? Object.values(val) : [];
+                if(!val) {
+                    dataMaintenance = [];
+                } else if(Array.isArray(val)) {
+                    dataMaintenance = val.filter(Boolean);
+                } else {
+                    dataMaintenance = Object.keys(val).map(k => ({ ...val[k], id: k }));
+                }
                 renderMaintenance();
             });
 
@@ -959,6 +969,13 @@
                         <td>${m.teknisi || '-'}</td>
                         <td><strong>${m.kondisi || '-'}</strong></td>
                         <td><small>${m.catatan || '-'}</small></td>
+                        <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
+                            <div class="action-btn-group">
+                                <button onclick="editMaintenance('${m.id}')" class="btn-edit-sm" title="Edit Log">Edit</button>
+                                <button onclick="finishMaintenance('${m.id}')" class="btn-approve" title="Tandai Selesai">Selesai</button>
+                                <button onclick="deleteMaintenance('${m.id}')" class="btn-delete" title="Hapus Log">Hapus</button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -1001,7 +1018,6 @@
             renderKontak();
         }
 
-        // FUNGSI CEK TABRAKAN JADWAL
         function isTimeOverlap(startA, endA, startB, endB) {
             return startA < endB && endA > startB;
         }
@@ -1019,7 +1035,6 @@
                 return;
             }
 
-            // CEK JADWAL BENTROK
             const bentrok = dataPemakaianRuangan.find(p => {
                 if (p.ruanganId === rId && p.tanggal === tgl && p.status !== 'Ditolak') {
                     return isTimeOverlap(jamMulai, jamSelesai, p.jamMulai, p.jamSelesai);
@@ -1065,7 +1080,6 @@
                 return;
             }
 
-            // CEK JADWAL BENTROK
             const bentrok = dataPemakaianAlat.find(pa => {
                 if (pa.alatId === aId && pa.tanggal === tgl && pa.status !== 'Ditolak') {
                     return isTimeOverlap(jamMulai, jamSelesai, pa.jamMulai, pa.jamSelesai);
@@ -1233,15 +1247,36 @@
         }
 
         function openModalMaintenance() {
+            document.getElementById('modalMaintTitle').innerText = 'Input Maintenance Log';
+            document.getElementById('mm_id').value = '';
             document.getElementById('mm_tanggal').valueAsDate = new Date();
+            document.getElementById('mm_jenis').value = '';
+            document.getElementById('mm_teknisi').value = '';
+            document.getElementById('mm_kondisi').value = 'Normal / Baik';
+            document.getElementById('mm_catatan').value = '';
             openModal('modalMaintenance');
+        }
+
+        function editMaintenance(id) {
+            const m = dataMaintenance.find(item => item.id === id);
+            if(m) {
+                document.getElementById('modalMaintTitle').innerText = 'Edit Maintenance Log';
+                document.getElementById('mm_id').value = m.id;
+                document.getElementById('mm_tanggal').value = m.tanggal || '';
+                document.getElementById('mm_alat').value = m.alatNama || '';
+                document.getElementById('mm_jenis').value = m.jenis || '';
+                document.getElementById('mm_teknisi').value = m.teknisi || '';
+                document.getElementById('mm_kondisi').value = m.kondisi || 'Normal / Baik';
+                document.getElementById('mm_catatan').value = m.catatan || '';
+                openModal('modalMaintenance');
+            }
         }
 
         function saveMaintenance(e) {
             e.preventDefault();
-            const newId = 'ML_' + Date.now();
+            const id = document.getElementById('mm_id').value || ('ML_' + Date.now());
             const newObj = {
-                id: newId,
+                id: id,
                 tanggal: document.getElementById('mm_tanggal').value,
                 alatNama: document.getElementById('mm_alat').value,
                 jenis: document.getElementById('mm_jenis').value,
@@ -1249,8 +1284,21 @@
                 kondisi: document.getElementById('mm_kondisi').value,
                 catatan: document.getElementById('mm_catatan').value
             };
-            db.ref('maintenanceLogs/' + newId).set(newObj);
-            closeModal('modalMaintenance');
+            db.ref('maintenanceLogs/' + id).set(newObj, (err) => {
+                if(!err) closeModal('modalMaintenance');
+            });
+        }
+
+        function finishMaintenance(id) {
+            if(confirm('Tandai pekerjaan maintenance ini sudah selesai?')) {
+                db.ref('maintenanceLogs/' + id + '/kondisi').set('Selesai (Maintenance)');
+            }
+        }
+
+        function deleteMaintenance(id) {
+            if(confirm('Hapus log maintenance ini?')) {
+                db.ref('maintenanceLogs/' + id).remove();
+            }
         }
 
         function openModalKontak() {
