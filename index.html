@@ -104,6 +104,9 @@
         .btn-admin-add { background-color: #002B49; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .btn-print { background-color: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .btn-print:hover { background-color: #047857; }
+
+        .upload-section { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 6px; margin-top: 4px; }
+        .preview-img-box { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 8px; display: none; border: 1px solid #cbd5e1; }
     </style>
 </head>
 <body>
@@ -415,7 +418,16 @@
                 <div class="form-group"><label>Nama Ruangan</label><input type="text" id="mr_nama" required class="form-control"></div>
                 <div class="form-group"><label>Kapasitas (Orang)</label><input type="number" id="mr_kapasitas" required class="form-control"></div>
                 <div class="form-group"><label>Fasilitas (Pisahkan koma)</label><input type="text" id="mr_fasilitas" required class="form-control"></div>
-                <div class="form-group"><label>URL Foto Ruangan / Link GDrive (Opsional)</label><input type="text" id="mr_foto" placeholder="https://..." class="form-control"></div>
+                
+                <div class="form-group">
+                    <label>Foto Ruangan (Pilih File / Link Web / Google Drive)</label>
+                    <div class="upload-section">
+                        <input type="file" id="mr_file" accept="image/*" onchange="handleFileSelect(event, 'mr_foto', 'mr_preview')" class="form-control" style="margin-bottom:6px;">
+                        <input type="text" id="mr_foto" placeholder="Atau paste URL Foto / Link Google Drive..." oninput="updatePreviewFromInput('mr_foto', 'mr_preview')" class="form-control">
+                        <img id="mr_preview" class="preview-img-box" alt="Preview Foto">
+                    </div>
+                </div>
+
                 <div class="form-group"><label>Status</label>
                     <select id="mr_status" class="form-control">
                         <option value="Tersedia">Tersedia</option>
@@ -446,7 +458,16 @@
                     </select>
                 </div>
                 <div class="form-group"><label>Jumlah Unit</label><input type="number" id="ma_jumlah" min="1" value="1" required class="form-control"></div>
-                <div class="form-group"><label>URL Foto Alat / Link GDrive (Opsional)</label><input type="text" id="ma_foto" placeholder="https://..." class="form-control"></div>
+                
+                <div class="form-group">
+                    <label>Foto Alat (Pilih File / Link Web / Google Drive)</label>
+                    <div class="upload-section">
+                        <input type="file" id="ma_file" accept="image/*" onchange="handleFileSelect(event, 'ma_foto', 'ma_preview')" class="form-control" style="margin-bottom:6px;">
+                        <input type="text" id="ma_foto" placeholder="Atau paste URL Foto / Link Google Drive..." oninput="updatePreviewFromInput('ma_foto', 'ma_preview')" class="form-control">
+                        <img id="ma_preview" class="preview-img-box" alt="Preview Foto">
+                    </div>
+                </div>
+
                 <div class="form-group"><label>Status</label>
                     <select id="ma_status" class="form-control">
                         <option value="Siap Pakai">Siap Pakai</option>
@@ -521,6 +542,36 @@
             return url;
         }
 
+        function handleFileSelect(event, targetInputId, previewImgId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    document.getElementById(targetInputId).value = base64Data;
+                    const preview = document.getElementById(previewImgId);
+                    if(preview) {
+                        preview.src = base64Data;
+                        preview.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updatePreviewFromInput(inputId, previewImgId) {
+            const val = document.getElementById(inputId).value;
+            const preview = document.getElementById(previewImgId);
+            if (!preview) return;
+            const finalUrl = convertGDriveLink(val);
+            if (finalUrl) {
+                preview.src = finalUrl;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
         // DATA BAWAAN DEFAULT
         const defaultRuangan = {
             "R1": { id: "R1", nama: "Ruang Praktikum Biologi Kedokteran", kapasitas: 40, fasilitas: ["AC", "Mikroskop Binokuler", "LCD Projector"], foto: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
@@ -547,7 +598,6 @@
         let dataMaintenance = [];
         let dataKontak = [];
 
-        // NORMALIZE ARRAY/OBJECT DARI FIREBASE
         function normalizeToObject(val) {
             if (!val) return {};
             if (Array.isArray(val)) {
@@ -572,7 +622,6 @@
             return {};
         }
 
-        // SINKRONISASI REALTIME
         function initRealtimeSync() {
             db.ref('rooms').on('value', (snapshot) => {
                 const val = snapshot.val();
@@ -985,7 +1034,9 @@
             document.getElementById('mr_nama').value = '';
             document.getElementById('mr_kapasitas').value = '';
             document.getElementById('mr_fasilitas').value = '';
+            document.getElementById('mr_file').value = '';
             document.getElementById('mr_foto').value = '';
+            document.getElementById('mr_preview').style.display = 'none';
             openModal('modalRuangan');
         }
 
@@ -997,8 +1048,10 @@
                 document.getElementById('mr_nama').value = r.nama || '';
                 document.getElementById('mr_kapasitas').value = r.kapasitas || 0;
                 document.getElementById('mr_fasilitas').value = Array.isArray(r.fasilitas) ? r.fasilitas.join(', ') : (r.fasilitas || '');
+                document.getElementById('mr_file').value = '';
                 document.getElementById('mr_foto').value = r.foto || '';
                 document.getElementById('mr_status').value = r.status || 'Tersedia';
+                updatePreviewFromInput('mr_foto', 'mr_preview');
                 openModal('modalRuangan');
             }
         }
@@ -1031,8 +1084,10 @@
             document.getElementById('ma_id').value = '';
             document.getElementById('ma_nama').value = '';
             document.getElementById('ma_jumlah').value = 1;
+            document.getElementById('ma_file').value = '';
             document.getElementById('ma_foto').value = '';
             document.getElementById('ma_sop').value = '';
+            document.getElementById('ma_preview').style.display = 'none';
             openModal('modalAlat');
         }
 
@@ -1044,9 +1099,11 @@
                 document.getElementById('ma_nama').value = a.nama || '';
                 document.getElementById('ma_kategori').value = a.kategori || 'General Lab';
                 document.getElementById('ma_jumlah').value = a.jumlah || 1;
+                document.getElementById('ma_file').value = '';
                 document.getElementById('ma_foto').value = a.foto || '';
                 document.getElementById('ma_status').value = a.status || 'Siap Pakai';
                 document.getElementById('ma_sop').value = a.sop || '';
+                updatePreviewFromInput('ma_foto', 'ma_preview');
                 openModal('modalAlat');
             }
         }
@@ -1100,6 +1157,9 @@
             const container = document.getElementById('containerFormKontak');
             container.innerHTML = '';
             dataKontak.forEach((c, i) => {
+                let previewSrc = convertGDriveLink(c.foto);
+                let previewDisplay = previewSrc ? 'block' : 'none';
+
                 container.innerHTML += `
                     <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1;">
                         <span style="font-size:12px; font-weight:bold; color:#002B49;">👤 Pengelola #${i+1}</span>
@@ -1111,7 +1171,11 @@
                             <input type="text" id="edit_wa_${i}" value="${c.wa||''}" placeholder="No WA (628...)" class="form-control">
                             <input type="text" id="edit_email_${i}" value="${c.email||''}" placeholder="Email" class="form-control">
                         </div>
-                        <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto / Link Google Drive" class="form-control" style="margin-top:6px;">
+                        <div class="upload-section" style="margin-top:8px;">
+                            <input type="file" accept="image/*" onchange="handleFileSelect(event, 'edit_foto_${i}', 'edit_preview_${i}')" class="form-control" style="margin-bottom:6px;">
+                            <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto / Link Google Drive" oninput="updatePreviewFromInput('edit_foto_${i}', 'edit_preview_${i}')" class="form-control">
+                            <img id="edit_preview_${i}" src="${previewSrc}" class="preview-img-box" style="display:${previewDisplay}; margin-top:6px;" alt="Preview Foto">
+                        </div>
                     </div>
                 `;
             });
