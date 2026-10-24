@@ -438,18 +438,18 @@
 
     <!-- JAVASCRIPT EXECUTABLE MANDIRI -->
     <script>
-        const initialRooms = [
+        var initialRooms = [
             { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
             { id: "rm2", firebaseKey: "rm2", name: "Laboratorium Biologi Molekuler & Kultur Sel", capacity: 15, facilities: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80" },
             { id: "rm3", firebaseKey: "rm3", name: "Ruang Diskusi & Seminar Lab", capacity: 25, facilities: "Smart TV, Sound System, Papan Tulis, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80" }
         ];
 
-        const initialEquipments = [
+        var initialEquipments = [
             { id: "eq1", firebaseKey: "eq1", name: "Mikroskop Binokuler Olympus CX21", category: "Mikroskopi", status: "Tersedia", sop: "1. Bersihkan lensa sebelum dan sesudah pakai.\n2. Matikan lampu jika tidak digunakan.", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80" },
             { id: "eq2", firebaseKey: "eq2", name: "Mikroskop Binokuler Olympus CH20", category: "Mikroskopi", status: "Tersedia", sop: "Gunakan minyak imersi khusus untuk perbesaran 100x.", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80" }
         ];
 
-        const initialContact = {
+        var initialContact = {
             name: "Budi Setiono, S.Si.",
             role: "Pengelola Lab Biologi Kedokteran FK UNAIR",
             phone: "085222974300"
@@ -460,26 +460,6 @@
         window.usageLogs = [];
         window.maintenanceLogs = [];
         window.contactData = initialContact;
-
-        try {
-            const savedRooms = localStorage.getItem('lab_rooms');
-            if (savedRooms) window.rooms = JSON.parse(savedRooms);
-            
-            const savedEq = localStorage.getItem('lab_equipments');
-            if (savedEq) window.equipments = JSON.parse(savedEq);
-
-            const savedUL = localStorage.getItem('lab_usage_logs');
-            if (savedUL) window.usageLogs = JSON.parse(savedUL);
-
-            const savedML = localStorage.getItem('lab_maint_logs');
-            if (savedML) window.maintenanceLogs = JSON.parse(savedML);
-
-            const savedContact = localStorage.getItem('lab_contact');
-            if (savedContact) window.contactData = JSON.parse(savedContact);
-        } catch (err) {
-            console.error("Localstorage load error:", err);
-        }
-
         window.isAdmin = false;
 
         function saveState() {
@@ -490,19 +470,19 @@
                 localStorage.setItem('lab_maint_logs', JSON.stringify(window.maintenanceLogs));
                 localStorage.setItem('lab_contact', JSON.stringify(window.contactData));
             } catch (err) {
-                console.error("Localstorage save error:", err);
+                console.error(err);
             }
         }
 
         function switchTab(tabName) {
-            ['ruangan', 'katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(t => {
-                const p = document.getElementById(`panel-${t}`);
-                const btn = document.getElementById(`tab-${t}`);
+            ['ruangan', 'katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(function(t) {
+                var p = document.getElementById('panel-' + t);
+                var btn = document.getElementById('tab-' + t);
                 if (p) p.classList.add('hidden');
                 if (btn) btn.classList.remove('active');
             });
-            const activePanel = document.getElementById(`panel-${tabName}`);
-            const activeBtn = document.getElementById(`tab-${tabName}`);
+            var activePanel = document.getElementById('panel-' + tabName);
+            var activeBtn = document.getElementById('tab-' + tabName);
             if (activePanel) activePanel.classList.remove('hidden');
             if (activeBtn) activeBtn.classList.add('active');
         }
@@ -518,10 +498,384 @@
         }
 
         function doLogin() {
-            const u = document.getElementById('auth-username').value.trim();
-            const p = document.getElementById('auth-password').value.trim();
+            var u = document.getElementById('auth-username').value.trim();
+            var p = document.getElementById('auth-password').value.trim();
 
             if (u === 'admin' && p === 'SSi.admi') {
                 window.isAdmin = true;
                 updateAdminUI();
-                document.
+                document.getElementById('modal-auth').classList.add('hidden');
+            } else {
+                alert('Username atau Password Admin Salah!\n\nUser: admin\nPass: SSi.admi');
+            }
+        }
+
+        function updateAdminUI() {
+            var badge = document.getElementById('admin-badge');
+            var btnText = document.getElementById('auth-btn-text');
+            var adminElements = document.querySelectorAll('.admin-only');
+
+            if (window.isAdmin) {
+                if (badge) badge.classList.remove('hidden');
+                if (btnText) btnText.innerText = 'Logout Admin';
+                adminElements.forEach(function(el) { el.classList.remove('hidden'); });
+            } else {
+                if (badge) badge.classList.add('hidden');
+                if (btnText) btnText.innerText = 'Login Admin';
+                adminElements.forEach(function(el) { el.classList.add('hidden'); });
+            }
+            renderRuangan();
+            renderKatalog();
+            renderUsageTable();
+            renderMaintenanceTable();
+            renderContactDisplay();
+        }
+
+        function renderRuangan() {
+            var grid = document.getElementById('ruangan-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            window.rooms.forEach(function(item) {
+                var card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-emerald-100 text-emerald-800">${item.status}</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                            <div class="text-xs text-slate-600 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <span class="font-semibold">${item.capacity} Orang</span>
+                            </div>
+                            <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <strong>Fasilitas:</strong> ${item.facilities}
+                            </div>
+                        </div>
+                    </div>
+                    ${window.isAdmin ? `
+                        <div class="flex gap-2 p-3 pt-0 border-t mt-2">
+                            <button onclick="openRoomModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            <button onclick="deleteRoom('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
+                        </div>
+                    ` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openRoomModal(key) {
+            document.getElementById('modal-room').classList.remove('hidden');
+            if (key) {
+                var item = window.rooms.find(function(r) { return r.firebaseKey === key || r.id === key; });
+                if (!item) return;
+                document.getElementById('room-modal-title').innerText = 'Edit Ruangan Laboratory';
+                document.getElementById('room-key').value = item.firebaseKey || key;
+                document.getElementById('room-name').value = item.name || '';
+                document.getElementById('room-capacity').value = item.capacity || 1;
+                document.getElementById('room-status').value = item.status || 'Tersedia';
+                document.getElementById('room-facilities').value = item.facilities || '';
+                document.getElementById('room-image-url').value = item.image || '';
+            } else {
+                document.getElementById('room-modal-title').innerText = 'Tambah Ruangan Laboratorium Baru';
+                document.getElementById('room-key').value = '';
+                document.getElementById('room-name').value = '';
+                document.getElementById('room-capacity').value = '20';
+                document.getElementById('room-facilities').value = '';
+                document.getElementById('room-image-url').value = '';
+            }
+        }
+
+        function closeRoomModal() {
+            document.getElementById('modal-room').classList.add('hidden');
+        }
+
+        function handleRoomSubmit(e) {
+            e.preventDefault();
+            var key = document.getElementById('room-key').value;
+            var name = document.getElementById('room-name').value;
+            var capacity = document.getElementById('room-capacity').value;
+            var status = document.getElementById('room-status').value;
+            var facilities = document.getElementById('room-facilities').value;
+            var image = document.getElementById('room-image-url').value || 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80';
+
+            if (key) {
+                var idx = window.rooms.findIndex(function(r) { return r.firebaseKey === key || r.id === key; });
+                if (idx !== -1) window.rooms[idx] = { id: key, firebaseKey: key, name: name, capacity: capacity, status: status, facilities: facilities, image: image };
+            } else {
+                var newKey = 'rm' + Date.now();
+                window.rooms.push({ id: newKey, firebaseKey: newKey, name: name, capacity: capacity, status: status, facilities: facilities, image: image });
+            }
+
+            saveState();
+            renderRuangan();
+            closeRoomModal();
+            alert('Data ruangan berhasil disimpan!');
+        }
+
+        function deleteRoom(key) {
+            if (confirm('Hapus ruangan ini dari katalog?')) {
+                window.rooms = window.rooms.filter(function(r) { return r.firebaseKey !== key && r.id !== key; });
+                saveState();
+                renderRuangan();
+            }
+        }
+
+        function renderKatalog() {
+            var searchEl = document.getElementById('search-input');
+            var catEl = document.getElementById('category-filter');
+            var grid = document.getElementById('katalog-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            var search = searchEl ? searchEl.value.toLowerCase() : '';
+            var category = catEl ? catEl.value : 'Semua';
+
+            var filtered = window.equipments.filter(function(e) {
+                var matchSearch = e.name ? e.name.toLowerCase().includes(search) : false;
+                var matchCat = category === 'Semua' || e.category === category;
+                return matchSearch && matchCat;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400">Tidak ada alat ditemukan.</div>';
+                return;
+            }
+
+            filtered.forEach(function(item) {
+                var card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition p-4 space-y-3';
+                var statusClass = item.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="h-40 bg-slate-100 rounded-lg overflow-hidden border">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex justify-between items-start gap-2">
+                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${statusClass}">${item.status}</span>
+                        </div>
+                        <span class="inline-block text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded border border-indigo-100">${item.category}</span>
+                        ${item.sop ? `
+                            <div class="text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 text-slate-600 mt-2">
+                                <strong class="text-indigo-900 block mb-0.5"><i class="fa-solid fa-book-open mr-1"></i> SOP Penggunaan:</strong>
+                                ${item.sop.replace(/\n/g, '<br>')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${window.isAdmin ? `
+                        <div class="flex gap-2 pt-2 border-t">
+                            <button onclick="openEquipmentModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            <button onclick="deleteEquipment('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
+                        </div>
+                    ` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openEquipmentModal(key) {
+            var modal = document.getElementById('modal-equipment');
+            modal.classList.remove('hidden');
+
+            if (key) {
+                var item = window.equipments.find(function(e) { return e.firebaseKey === key || e.id === key; });
+                if (!item) return;
+                document.getElementById('equipment-modal-title').innerText = 'Edit Detail Alat';
+                document.getElementById('eq-id').value = item.id || '';
+                document.getElementById('eq-firebase-key').value = item.firebaseKey || key;
+                document.getElementById('eq-name').value = item.name || '';
+                document.getElementById('eq-category').value = item.category || 'Mikroskopi';
+                document.getElementById('eq-status').value = item.status || 'Tersedia';
+                document.getElementById('eq-sop').value = item.sop || '';
+                document.getElementById('eq-image-url').value = item.image || '';
+            } else {
+                document.getElementById('equipment-modal-title').innerText = 'Tambah Alat Laboratorium Baru';
+                document.getElementById('eq-id').value = '';
+                document.getElementById('eq-firebase-key').value = '';
+                document.getElementById('eq-name').value = '';
+                document.getElementById('eq-sop').value = '';
+                document.getElementById('eq-image-url').value = '';
+            }
+        }
+
+        function closeEquipmentModal() {
+            document.getElementById('modal-equipment').classList.add('hidden');
+        }
+
+        function handleEquipmentSubmit(e) {
+            e.preventDefault();
+            var key = document.getElementById('eq-firebase-key').value;
+            var name = document.getElementById('eq-name').value;
+            var category = document.getElementById('eq-category').value;
+            var status = document.getElementById('eq-status').value;
+            var sop = document.getElementById('eq-sop').value;
+            var image = document.getElementById('eq-image-url').value || 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80';
+
+            if (key) {
+                var index = window.equipments.findIndex(function(eq) { return eq.firebaseKey === key || eq.id === key; });
+                if (index !== -1) {
+                    window.equipments[index] = { id: key, firebaseKey: key, name: name, category: category, status: status, sop: sop, image: image };
+                }
+            } else {
+                var newKey = 'eq' + Date.now();
+                window.equipments.push({ id: newKey, firebaseKey: newKey, name: name, category: category, status: status, sop: sop, image: image });
+            }
+
+            saveState();
+            renderKatalog();
+            populateEquipmentDropdown();
+            populateMaintenanceDropdown();
+            closeEquipmentModal();
+            alert('Data alat berhasil disimpan!');
+        }
+
+        function deleteEquipment(key) {
+            if (confirm('Apakah Anda yakin ingin menghapus alat ini dari katalog?')) {
+                window.equipments = window.equipments.filter(function(e) { return e.firebaseKey !== key && e.id !== key; });
+                saveState();
+                renderKatalog();
+                populateEquipmentDropdown();
+                populateMaintenanceDropdown();
+            }
+        }
+
+        function handleMaintenanceSubmit(e) {
+            e.preventDefault();
+            var equipmentName = document.getElementById('maint-equipment-select').value;
+            var type = document.getElementById('maint-type').value;
+            var date = document.getElementById('maint-date').value;
+            var technician = document.getElementById('maint-technician').value;
+            var notes = document.getElementById('maint-notes').value;
+
+            var newLog = {
+                key: 'mt' + Date.now(),
+                equipmentName: equipmentName,
+                type: type,
+                date: date,
+                technician: technician,
+                notes: notes
+            };
+
+            window.maintenanceLogs.unshift(newLog);
+            saveState();
+            renderMaintenanceTable();
+            e.target.reset();
+            alert('Catatan maintenance berhasil ditambahkan!');
+        }
+
+        function renderMaintenanceTable() {
+            var tbody = document.getElementById('maintenance-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (window.maintenanceLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada catatan pemeliharaan alat.</td></tr>';
+                return;
+            }
+
+            window.maintenanceLogs.forEach(function(log) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-700">${log.date}</td>
+                    <td class="p-3 font-bold text-slate-800">${log.equipmentName}</td>
+                    <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-semibold text-[10px]">${log.type}</span></td>
+                    <td class="p-3"><strong class="text-slate-800">${log.technician}:</strong> ${log.notes}</td>
+                    <td class="p-3 text-right">
+                        ${window.isAdmin ? `<button onclick="deleteMaintenanceLog('${log.key}')" class="bg-rose-100 text-rose-600 px-2 py-1 rounded text-[10px] hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteMaintenanceLog(key) {
+            if (confirm('Hapus catatan maintenance ini?')) {
+                window.maintenanceLogs = window.maintenanceLogs.filter(function(m) { return m.key !== key; });
+                saveState();
+                renderMaintenanceTable();
+            }
+        }
+
+        function renderContactDisplay() {
+            document.getElementById('contact-name-display').innerText = window.contactData.name;
+            document.getElementById('contact-role-display').innerText = window.contactData.role;
+            document.getElementById('contact-phone-display').innerText = window.contactData.phone;
+            
+            var cleanPhone = window.contactData.phone.replace(/[^0-9]/g, '');
+            var waPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
+            document.getElementById('contact-wa-link').href = 'https://wa.me/' + waPhone;
+        }
+
+        function openContactModal() {
+            document.getElementById('modal-contact').classList.remove('hidden');
+            document.getElementById('contact-name-input').value = window.contactData.name;
+            document.getElementById('contact-role-input').value = window.contactData.role;
+            document.getElementById('contact-phone-input').value = window.contactData.phone;
+        }
+
+        function closeContactModal() {
+            document.getElementById('modal-contact').classList.add('hidden');
+        }
+
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            window.contactData = {
+                name: document.getElementById('contact-name-input').value,
+                role: document.getElementById('contact-role-input').value,
+                phone: document.getElementById('contact-phone-input').value
+            };
+            saveState();
+            renderContactDisplay();
+            closeContactModal();
+            alert('Informasi kontak pengelola berhasil diperbarui!');
+        }
+
+        function populateEquipmentDropdown() {
+            var select = document.getElementById('usage-equipment-select');
+            if (!select) return;
+            select.innerHTML = '';
+            window.equipments.forEach(function(eq) {
+                var opt = document.createElement('option');
+                opt.value = eq.name;
+                opt.innerText = eq.name + ' (' + eq.status + ')';
+                select.appendChild(opt);
+            });
+        }
+
+        function populateMaintenanceDropdown() {
+            var select = document.getElementById('maint-equipment-select');
+            if (!select) return;
+            select.innerHTML = '';
+            window.equipments.forEach(function(eq) {
+                var opt = document.createElement('option');
+                opt.value = eq.name;
+                opt.innerText = eq.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function handleUsageSubmit(e) {
+            e.preventDefault();
+            var equipmentName = document.getElementById('usage-equipment-select').value;
+            var quantity = document.getElementById('usage-quantity').value || 1;
+            var borrower = document.getElementById('usage-borrower').value;
+            var people = document.getElementById('usage-people').value || 1;
+            var dept = document.getElementById('usage-dept').value;
+            var purpose = document.getElementById('usage-purpose').value;
+            var dateVal = document.getElementById('usage-date').value;
+            var startTime = document.getElementById('usage-start-time').value;
+            var endTime = document.getElementById('usage-end-time').value;
+
+            var newUsage = {
+                firebaseKey: 'us' + Date.now(),
+                equipmentName: equipmentName,
+                quantity: quantity,
+                borrower: borrower + ' (' + dept + ')',
+                peopleCount: people,
+                purpose: purpose,
+                date: dateVal,
+                timeSchedule: startTime + ' -
