@@ -65,6 +65,12 @@
         .btn-submit { width: 100%; background-color: #002B49; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 10px; }
         .btn-submit:hover { background-color: #0f172a; }
 
+        .filter-bar { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .filter-bar label { font-size: 12px; font-weight: 600; color: #475569; }
+        .filter-bar input[type="date"] { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }
+        .btn-filter { background: #002B49; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-reset-filter { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
         .table-responsive { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th { background-color: #f8fafc; padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #334155; text-transform: uppercase; font-size: 11px; }
@@ -93,7 +99,7 @@
 
         @media print {
             body { background: white; color: black; }
-            header, nav, .admin-controls, .btn-action, .form-container, .btn-print, .no-print, .calendar-container { display: none !important; }
+            header, nav, .admin-controls, .btn-action, .form-container, .btn-print, .no-print, .calendar-container, .filter-bar { display: none !important; }
             main { max-width: 100%; margin: 0; padding: 0; }
             .card { border: none; box-shadow: none; }
             .table-responsive { border: none; }
@@ -231,10 +237,21 @@
                 </div>
 
                 <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="font-size:15px;">📋 Daftar Status Pemakaian Ruangan</h3>
                         <button onclick="cetakLaporan('Daftar Status Pemakaian Ruangan')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
                     </div>
+
+                    <!-- FILTER RENTANG WAKTU RUANGAN -->
+                    <div class="filter-bar">
+                        <label>📅 Rentang Waktu Cetak/Tampil:</label>
+                        <input type="date" id="filter_r_start">
+                        <label>s/d</label>
+                        <input type="date" id="filter_r_end">
+                        <button onclick="applyFilterRuangan()" class="btn-filter">Filter</button>
+                        <button onclick="resetFilterRuangan()" class="btn-reset-filter">Reset</button>
+                    </div>
+
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -326,10 +343,21 @@
                 </div>
 
                 <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="font-size:15px;">📊 Rekapitulasi Pemakaian Alat</h3>
                         <button onclick="cetakLaporan('Rekapitulasi Pemakaian Alat')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
                     </div>
+
+                    <!-- FILTER RENTANG WAKTU ALAT -->
+                    <div class="filter-bar">
+                        <label>📅 Rentang Waktu Cetak/Tampil:</label>
+                        <input type="date" id="filter_a_start">
+                        <label>s/d</label>
+                        <input type="date" id="filter_a_end">
+                        <button onclick="applyFilterAlat()" class="btn-filter">Filter</button>
+                        <button onclick="resetFilterAlat()" class="btn-reset-filter">Reset</button>
+                    </div>
+
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -361,6 +389,17 @@
                     <button onclick="openModalMaintenance()" class="admin-only btn-admin-add">➕ Tambah Log</button>
                 </div>
             </div>
+
+            <!-- FILTER RENTANG WAKTU MAINTENANCE -->
+            <div class="filter-bar">
+                <label>📅 Rentang Waktu Cetak/Tampil:</label>
+                <input type="date" id="filter_m_start">
+                <label>s/d</label>
+                <input type="date" id="filter_m_end">
+                <button onclick="applyFilterMaint()" class="btn-filter">Filter</button>
+                <button onclick="resetFilterMaint()" class="btn-reset-filter">Reset</button>
+            </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -542,6 +581,14 @@
 
         let isAdmin = false;
         let currentDate = new Date(2026, 9, 1);
+
+        // VARIABEL FILTER TANGGAL
+        let filterRuanganStart = '';
+        let filterRuanganEnd = '';
+        let filterAlatStart = '';
+        let filterAlatEnd = '';
+        let filterMaintStart = '';
+        let filterMaintEnd = '';
 
         function convertGDriveLink(url) {
             if (!url) return '';
@@ -869,10 +916,30 @@
             });
         }
 
+        // FILTER TANGGAL PEMAKAIAN RUANGAN
+        function applyFilterRuangan() {
+            filterRuanganStart = document.getElementById('filter_r_start').value;
+            filterRuanganEnd = document.getElementById('filter_r_end').value;
+            renderPemakaianRuangan();
+        }
+        function resetFilterRuangan() {
+            document.getElementById('filter_r_start').value = '';
+            document.getElementById('filter_r_end').value = '';
+            filterRuanganStart = '';
+            filterRuanganEnd = '';
+            renderPemakaianRuangan();
+        }
+
         function renderPemakaianRuangan() {
             const tb = document.getElementById('tabelPemakaianRuangan');
             tb.innerHTML = '';
-            dataPemakaianRuangan.forEach(p => {
+
+            let filteredList = dataPemakaianRuangan;
+            if (filterRuanganStart && filterRuanganEnd) {
+                filteredList = filteredList.filter(p => p.tanggal >= filterRuanganStart && p.tanggal <= filterRuanganEnd);
+            }
+
+            filteredList.forEach(p => {
                 tb.innerHTML += `
                     <tr>
                         <td><strong>${p.pemohon || '-'}</strong><br><small>${p.nim || '-'}</small><br><small style="color:#2563eb;">${p.instansi || '-'}</small></td>
@@ -938,10 +1005,30 @@
             });
         }
 
+        // FILTER TANGGAL PEMAKAIAN ALAT
+        function applyFilterAlat() {
+            filterAlatStart = document.getElementById('filter_a_start').value;
+            filterAlatEnd = document.getElementById('filter_a_end').value;
+            renderPemakaianAlat();
+        }
+        function resetFilterAlat() {
+            document.getElementById('filter_a_start').value = '';
+            document.getElementById('filter_a_end').value = '';
+            filterAlatStart = '';
+            filterAlatEnd = '';
+            renderPemakaianAlat();
+        }
+
         function renderPemakaianAlat() {
             const tb = document.getElementById('tabelPemakaianAlat');
             tb.innerHTML = '';
-            dataPemakaianAlat.forEach(pa => {
+
+            let filteredList = dataPemakaianAlat;
+            if (filterAlatStart && filterAlatEnd) {
+                filteredList = filteredList.filter(pa => pa.tanggal >= filterAlatStart && pa.tanggal <= filterAlatEnd);
+            }
+
+            filteredList.forEach(pa => {
                 let jadwalText = pa.tanggal ? `${pa.tanggal}<br><small>${pa.jamMulai || ''} - ${pa.jamSelesai || ''} WIB</small>` : '-';
                 tb.innerHTML += `
                     <tr>
@@ -963,10 +1050,30 @@
             });
         }
 
+        // FILTER TANGGAL MAINTENANCE
+        function applyFilterMaint() {
+            filterMaintStart = document.getElementById('filter_m_start').value;
+            filterMaintEnd = document.getElementById('filter_m_end').value;
+            renderMaintenance();
+        }
+        function resetFilterMaint() {
+            document.getElementById('filter_m_start').value = '';
+            document.getElementById('filter_m_end').value = '';
+            filterMaintStart = '';
+            filterMaintEnd = '';
+            renderMaintenance();
+        }
+
         function renderMaintenance() {
             const tb = document.getElementById('tabelMaintenance');
             tb.innerHTML = '';
-            dataMaintenance.forEach(m => {
+
+            let filteredList = dataMaintenance;
+            if (filterMaintStart && filterMaintEnd) {
+                filteredList = filteredList.filter(m => m.tanggal >= filterMaintStart && m.tanggal <= filterMaintEnd);
+            }
+
+            filteredList.forEach(m => {
                 tb.innerHTML += `
                     <tr>
                         <td>${m.tanggal || '-'}</td>
