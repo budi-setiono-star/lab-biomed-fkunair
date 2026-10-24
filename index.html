@@ -13,7 +13,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tab-btn.active { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: 700; }
-        .cal-day { min-h: 80px; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
@@ -91,14 +90,14 @@
 
         <!-- PANEL 2: PEMAKAIAN RUANGAN & KALENDER -->
         <section id="panel-pinjam-ruangan" class="hidden space-y-6">
-            <!-- KALENDER PEMAKAIAN RUANGAN -->
+            <!-- KALENDER JADWAL -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b pb-3">
                     <div>
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-days text-indigo-600"></i> Kalender Jadwal Pemakaian Ruangan
                         </h3>
-                        <p class="text-xs text-slate-500">Jadwal penggunaan ruangan yang telah disetujui/diajukan</p>
+                        <p class="text-xs text-slate-500">Jadwal penggunaan ruangan praktikum & penelitian yang telah diajukan</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <button onclick="changeMonth(-1)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold text-slate-700"><i class="fa-solid fa-chevron-left"></i></button>
@@ -107,7 +106,6 @@
                     </div>
                 </div>
 
-                <!-- Grid Kalender -->
                 <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-600 mb-1 bg-slate-100 py-2 rounded-lg">
                     <div class="text-rose-600">Ming</div>
                     <div>Sen</div>
@@ -210,21 +208,6 @@
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="search-input" oninput="renderKatalog()" placeholder="Cari nama alat..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
-                    <select id="category-filter" onchange="renderKatalog()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
-                        <option value="Semua">Semua Kategori</option>
-                        <option value="Mikroskopi">Mikroskopi</option>
-                        <option value="Biologi Molekuler">Biologi Molekuler</option>
-                        <option value="Preparasi Sampel">Preparasi Sampel</option>
-                        <option value="Analisis DNA">Analisis DNA</option>
-                        <option value="Inkubasi">Inkubasi</option>
-                        <option value="Fasilitas Khusus">Fasilitas Khusus</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                    <button id="add-equipment-btn" onclick="openEquipmentModal()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-plus"></i> Tambah Alat
-                    </button>
                 </div>
             </div>
 
@@ -233,113 +216,328 @@
 
         <!-- PANEL 4: PEMAKAIAN ALAT -->
         <section id="panel-pemakaian" class="hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
-                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                        <i class="fa-solid fa-file-pen text-indigo-600"></i> Form Pengajuan Pemakaian Alat
-                    </h3>
-                    <form onsubmit="handleUsageSubmit(event)" class="space-y-4">
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat Lab</label>
-                                <select id="usage-equipment-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"></select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah Unit <span class="text-rose-500">*</span></label>
-                                <input type="number" id="usage-quantity" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pemakai / Peneliti</label>
-                                <input type="text" id="usage-borrower" required placeholder="Nama / NIM / NIP..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Orang <span class="text-rose-500">*</span></label>
-                                <input type="number" id="usage-people" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Instansi / Class / Prodi</label>
-                            <input type="text" id="usage-dept" required placeholder="Contoh: S1 Kedokteran FK UNAIR" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-
-                        <div class="border p-3 rounded-xl bg-slate-50 space-y-3">
-                            <span class="block text-xs font-bold text-indigo-900"><i class="fa-solid fa-calendar-days mr-1"></i> Jadwal Pemakaian</span>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tanggal Pemakaian <span class="text-rose-500">*</span></label>
-                                <input type="date" id="usage-date" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
-                                    <input type="time" id="usage-start-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
-                                    <input type="time" id="usage-end-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Keperluan / Judul Penelitian</label>
-                            <textarea id="usage-purpose" rows="2" required placeholder="Deskripsi pemakaian alat..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold shadow-md transition">
-                            <i class="fa-solid fa-paper-plane mr-1"></i> Ajukan Pemakaian
-                        </button>
-                    </form>
-                </div>
-
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="flex justify-between items-center mb-4 border-b pb-3">
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Pemakaian Alat
-                        </h3>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                                    <th class="p-3">Jadwal (Tgl & Waktu)</th>
-                                    <th class="p-3">Nama Alat & Jumlah Unit</th>
-                                    <th class="p-3">Pemakai & Personel</th>
-                                    <th class="p-3">Keperluan</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usage-table-body" class="divide-y divide-slate-200"></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-base font-bold text-slate-800 mb-4 border-b pb-3">Riwayat Pemakaian Alat</h3>
+                <div id="usage-list" class="text-xs text-slate-500">Belum ada riwayat pemakaian alat.</div>
             </div>
         </section>
 
         <!-- PANEL 5: MAINTENANCE LOG -->
         <section id="panel-maintenance" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-screwdriver-wrench text-amber-600"></i> Log Perawatan & Kalibrasi Alat
-                        </h3>
-                        <p class="text-xs text-slate-500">Catatan pemeliharaan rutin laboratorium</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openMaintenanceModal()" class="admin-only hidden bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
-                            <i class="fa-solid fa-plus"></i> Tambah Catatan
-                        </button>
-                    </div>
-                </div>
+                <h3 class="text-base font-bold text-slate-800 mb-4 border-b pb-3">Log Maintenance Alat</h3>
+                <div id="maint-list" class="text-xs text-slate-500">Belum ada data pemeliharaan alat.</div>
+            </div>
+        </section>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                                <th class="p-3">Tanggal Pelaksanaan</th>
-                                <th class="p-3">Nama Alat</th>
+        <!-- PANEL 6: KONTAK PENGELOLA -->
+        <section id="panel-kontak" class="hidden space-y-6">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-3xl mx-auto text-center">
+                <h3 class="text-xl font-extrabold text-indigo-950 mb-4 border-b pb-3">Pengelola Laboratorium</h3>
+                <p class="text-sm font-bold text-slate-800">Budi Setiono, S.Si.</p>
+                <p class="text-xs text-slate-500 mb-4">Pengelola Lab Biologi Kedokteran FK UNAIR</p>
+                <a href="https://wa.me/6285222974300" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">
+                    <i class="fa-brands fa-whatsapp"></i> Hubungi Pengelola via WA
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL AUTHENTICATION ADMIN -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
+                <i class="fa-solid fa-shield-halved text-indigo-600"></i> Login Admin
+            </h3>
+            <form onsubmit="handleAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                    <input type="text" id="auth-username" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                    <input type="password" id="auth-password" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleAuthModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT EXECUTABLE INSTANT -->
+    <script>
+        const initialRooms = [
+            { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
+            { id: "rm2", firebaseKey: "rm2", name: "Laboratorium Biologi Molekuler & Kultur Sel", capacity: 15, facilities: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80" },
+            { id: "rm3", firebaseKey: "rm3", name: "Ruang Diskusi & Seminar Lab", capacity: 25, facilities: "Smart TV, Sound System, Papan Tulis, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        const initialEquipments = [
+            { id: "eq1", firebaseKey: "eq1", name: "Mikroskop Binokuler Olympus CX21", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80" },
+            { id: "eq2", firebaseKey: "eq2", name: "Mikroskop Binokuler Olympus CH20", category: "Mikroskopi", status: "Tersedia", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        window.rooms = JSON.parse(localStorage.getItem('lab_rooms')) || initialRooms;
+        window.equipments = JSON.parse(localStorage.getItem('lab_equipments')) || initialEquipments;
+        window.roomBookings = JSON.parse(localStorage.getItem('lab_room_bookings')) || [];
+        window.isAdmin = false;
+        let currentDate = new Date();
+
+        function saveState() {
+            localStorage.setItem('lab_rooms', JSON.stringify(window.rooms));
+            localStorage.setItem('lab_equipments', JSON.stringify(window.equipments));
+            localStorage.setItem('lab_room_bookings', JSON.stringify(window.roomBookings));
+        }
+
+        function switchTab(tabName) {
+            ['ruangan', 'pinjam-ruangan', 'katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(t => {
+                const p = document.getElementById(`panel-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (p) p.classList.add('hidden');
+                if (btn) btn.classList.remove('active');
+            });
+            const activePanel = document.getElementById(`panel-${tabName}`);
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activePanel) activePanel.classList.remove('hidden');
+            if (activeBtn) activeBtn.classList.add('active');
+
+            if (tabName === 'pinjam-ruangan') renderCalendar();
+        }
+
+        function toggleAuthModal() {
+            if (window.isAdmin) {
+                window.isAdmin = false;
+                updateAdminUI();
+                alert('Keluar dari mode Admin.');
+            } else {
+                document.getElementById('modal-auth').classList.remove('hidden');
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const u = document.getElementById('auth-username').value;
+            const p = document.getElementById('auth-password').value;
+
+            if (u === 'admin' && p === 'SSi.admi') {
+                window.isAdmin = true;
+                updateAdminUI();
+                document.getElementById('modal-auth').classList.add('hidden');
+            } else {
+                alert('Username / Password Admin Salah!');
+            }
+        }
+
+        function updateAdminUI() {
+            const badge = document.getElementById('admin-badge');
+            const btnText = document.getElementById('auth-btn-text');
+            if (window.isAdmin) {
+                if (badge) badge.classList.remove('hidden');
+                if (btnText) btnText.innerText = 'Logout Admin';
+            } else {
+                if (badge) badge.classList.add('hidden');
+                if (btnText) btnText.innerText = 'Login Admin';
+            }
+            renderRuangan();
+            renderRoomBookingTable();
+            renderCalendar();
+        }
+
+        function renderRuangan() {
+            const grid = document.getElementById('ruangan-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            window.rooms.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-emerald-100 text-emerald-800">${item.status}</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                            <div class="text-xs text-slate-600 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <span class="font-semibold">${item.capacity} Orang</span>
+                            </div>
+                            <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <strong>Fasilitas:</strong> ${item.facilities}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderKatalog() {
+            const grid = document.getElementById('katalog-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            window.equipments.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 p-4 space-y-2';
+                card.innerHTML = `<h3 class="font-bold text-slate-800 text-sm">${item.name}</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded">${item.category}</span>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function populateRoomDropdowns() {
+            const select = document.getElementById('booking-room-select');
+            if (!select) return;
+            select.innerHTML = '';
+            window.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.name;
+                opt.innerText = `${r.name} (${r.capacity} Orang)`;
+                select.appendChild(opt);
+            });
+        }
+
+        // DETEKSI BENTROK JADWAL OTOMATIS
+        function handleRoomBookingSubmit(e) {
+            e.preventDefault();
+            const roomName = document.getElementById('booking-room-select').value;
+            const borrower = document.getElementById('booking-borrower').value;
+            const people = document.getElementById('booking-people').value || 1;
+            const dept = document.getElementById('booking-dept').value;
+            const purpose = document.getElementById('booking-purpose').value;
+            const dateVal = document.getElementById('booking-date').value;
+            const startTime = document.getElementById('booking-start-time').value;
+            const endTime = document.getElementById('booking-end-time').value;
+
+            if (startTime >= endTime) {
+                alert('Jam selesai harus lebih besar dari jam mulai!');
+                return;
+            }
+
+            const isClash = window.roomBookings.some(b => {
+                if (b.roomName !== roomName || b.status === 'Ditolak') return false;
+                if (b.rawDate !== dateVal) return false;
+                return (startTime < b.endTime && endTime > b.startTime);
+            });
+
+            if (isClash) {
+                alert(`PENGAJUAN DITOLAK!\nJadwal pada ${roomName} tanggal ${dateVal} jam ${startTime} - ${endTime} WIB sudah terisi.`);
+                return;
+            }
+
+            const newBooking = {
+                firebaseKey: 'rb' + Date.now(),
+                rawDate: dateVal,
+                startTime: startTime,
+                endTime: endTime,
+                date: dateVal,
+                timeSchedule: `${startTime} - ${endTime} WIB`,
+                roomName: roomName,
+                peopleCount: people,
+                borrower: `${borrower} (${dept})`,
+                purpose,
+                status: 'Menunggu Persetujuan'
+            };
+
+            window.roomBookings.unshift(newBooking);
+            saveState();
+            renderRoomBookingTable();
+            renderCalendar();
+            e.target.reset();
+            alert('Pemakaian ruangan berhasil diajukan!');
+        }
+
+        function renderRoomBookingTable() {
+            const tbody = document.getElementById('room-booking-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (window.roomBookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data pemakaian.</td></tr>';
+                return;
+            }
+
+            window.roomBookings.forEach(log => {
+                const tr = document.createElement('tr');
+                const badgeClass = log.status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+
+                tr.innerHTML = `
+                    <td class="p-3"><strong>${log.date}</strong><br><span class="text-indigo-600">${log.timeSchedule}</span></td>
+                    <td class="p-3 font-semibold text-slate-800">${log.roomName}</td>
+                    <td class="p-3">${log.borrower}</td>
+                    <td class="p-3">${log.purpose}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${log.status}</span></td>
+                    <td class="p-3 text-right">
+                        ${window.isAdmin ? `<button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px]">Setujui</button>` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateRoomBookingStatus(key, status) {
+            const item = window.roomBookings.find(b => b.firebaseKey === key);
+            if (item) { item.status = status; saveState(); renderRoomBookingTable(); renderCalendar(); }
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const title = document.getElementById('cal-month-title');
+            if (!grid || !title) return;
+
+            grid.innerHTML = '';
+            const y = currentDate.getFullYear();
+            const m = currentDate.getMonth();
+
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            title.innerText = `${months[m]} ${y}`;
+
+            const firstDay = new Date(y, m, 1).getDay();
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                const dayStr = day < 10 ? '0' + day : '' + day;
+                const monthStr = (m + 1) < 10 ? '0' + (m + 1) : '' + (m + 1);
+                const isoDate = `${y}-${monthStr}-${dayStr}`;
+
+                cell.className = 'border border-slate-200 p-1 min-h-[70px] bg-white rounded-lg flex flex-col justify-between';
+                cell.innerHTML = `<span class="font-bold text-slate-700 text-[11px]">${day}</span>`;
+
+                const dayBookings = window.roomBookings.filter(b => b.rawDate === isoDate);
+                dayBookings.forEach(b => {
+                    const bEl = document.createElement('div');
+                    bEl.className = `text-[9px] p-1 rounded font-semibold leading-tight mt-1 ${b.status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
+                    bEl.innerText = `${b.startTime} ${b.roomName}`;
+                    cell.appendChild(bEl);
+                });
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function changeMonth(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
+            renderCalendar();
+        }
+
+        // INIT LOAD ON STARTUP
+        document.addEventListener('DOMContentLoaded', function() {
+            renderRuangan();
+            renderKatalog();
+            populateRoomDropdowns();
+            renderRoomBookingTable();
+            renderCalendar();
+
+            const today = new Date().toISOString().split('T')[0];
+            if (document.getElementById('booking-date')) document.getElementById('booking-date').value = today;
+        });
+    </script>
+</body>
+</html>
