@@ -433,7 +433,7 @@
                 <div class="form-group"><label>Nama Ruangan</label><input type="text" id="mr_nama" required class="form-control"></div>
                 <div class="form-group"><label>Kapasitas (Orang)</label><input type="number" id="mr_kapasitas" required class="form-control"></div>
                 <div class="form-group"><label>Fasilitas (Pisahkan koma)</label><input type="text" id="mr_fasilitas" required class="form-control"></div>
-                <div class="form-group"><label>URL Foto Ruangan (Opsional)</label><input type="text" id="mr_foto" placeholder="https://..." class="form-control"></div>
+                <div class="form-group"><label>URL Foto Ruangan / Link GDrive (Opsional)</label><input type="text" id="mr_foto" placeholder="https://..." class="form-control"></div>
                 <div class="form-group"><label>Status</label>
                     <select id="mr_status" class="form-control">
                         <option value="Tersedia">Tersedia</option>
@@ -464,7 +464,7 @@
                     </select>
                 </div>
                 <div class="form-group"><label>Jumlah Unit</label><input type="number" id="ma_jumlah" min="1" value="1" required class="form-control"></div>
-                <div class="form-group"><label>URL Foto Alat (Opsional)</label><input type="text" id="ma_foto" placeholder="https://..." class="form-control"></div>
+                <div class="form-group"><label>URL Foto Alat / Link GDrive (Opsional)</label><input type="text" id="ma_foto" placeholder="https://..." class="form-control"></div>
                 <div class="form-group"><label>Status</label>
                     <select id="ma_status" class="form-control">
                         <option value="Siap Pakai">Siap Pakai</option>
@@ -509,7 +509,7 @@
         <div class="modal-content">
             <div class="modal-header">Edit Kontak & Foto Pengelola</div>
             <p style="font-size:11px; color:#64748b; margin-bottom:12px;">
-                * Gunakan link gambar/foto dari internet (URL berawalan https://...). Jika tidak ada foto, kosongkan saja.
+                * <strong>PENTING:</strong> Pastikan file di Google Drive sudah disetting <em>"Siapa saja yang memiliki link" (Anyone with the link)</em>.
             </p>
             <form onsubmit="saveKontak(event)">
                 <div id="containerFormKontak" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -525,6 +525,18 @@
     <script>
         let isAdmin = false;
         let currentDate = new Date(2026, 9, 1);
+
+        // FUNGSI KONVERSI LINK GOOGLE DRIVE KE DIRECT IMAGE URL
+        function convertGDriveLink(url) {
+            if (!url) return '';
+            url = url.trim();
+            // Menangani berbagai format link Google Drive (d/FILE_ID, id=FILE_ID, d/FILE_ID/view)
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+            }
+            return url;
+        }
 
         const defaultRuangan = [
             { id: 1, nama: "Ruang Praktikum Biologi Kedokteran", kapasitas: 40, fasilitas: ["AC", "Mikroskop Binokuler", "LCD Projector"], foto: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
@@ -557,20 +569,20 @@
             { jabatan: "Admin Administrasi Lab", nama: "Nita Permata, A.Md", wa: "6281987654321", email: "nita.permata@fk.unair.ac.id", foto: "" }
         ];
 
-        let dataRuangan = JSON.parse(localStorage.getItem('fk_lab_ruangan_v12')) || defaultRuangan;
-        let dataAlat = JSON.parse(localStorage.getItem('fk_lab_alat_v12')) || defaultAlat;
-        let dataPemakaianRuangan = JSON.parse(localStorage.getItem('fk_lab_pem_ruangan_v12')) || defaultPemakaianRuangan;
-        let dataPemakaianAlat = JSON.parse(localStorage.getItem('fk_lab_pem_alat_v12')) || defaultPemakaianAlat;
-        let dataMaintenance = JSON.parse(localStorage.getItem('fk_lab_maint_v12')) || defaultMaintenance;
-        let dataKontak = JSON.parse(localStorage.getItem('fk_lab_kontak_v12')) || defaultKontak;
+        let dataRuangan = JSON.parse(localStorage.getItem('fk_lab_ruangan_v13')) || defaultRuangan;
+        let dataAlat = JSON.parse(localStorage.getItem('fk_lab_alat_v13')) || defaultAlat;
+        let dataPemakaianRuangan = JSON.parse(localStorage.getItem('fk_lab_pem_ruangan_v13')) || defaultPemakaianRuangan;
+        let dataPemakaianAlat = JSON.parse(localStorage.getItem('fk_lab_pem_alat_v13')) || defaultPemakaianAlat;
+        let dataMaintenance = JSON.parse(localStorage.getItem('fk_lab_maint_v13')) || defaultMaintenance;
+        let dataKontak = JSON.parse(localStorage.getItem('fk_lab_kontak_v13')) || defaultKontak;
 
         function saveData() {
-            localStorage.setItem('fk_lab_ruangan_v12', JSON.stringify(dataRuangan));
-            localStorage.setItem('fk_lab_alat_v12', JSON.stringify(dataAlat));
-            localStorage.setItem('fk_lab_pem_ruangan_v12', JSON.stringify(dataPemakaianRuangan));
-            localStorage.setItem('fk_lab_pem_alat_v12', JSON.stringify(dataPemakaianAlat));
-            localStorage.setItem('fk_lab_maint_v12', JSON.stringify(dataMaintenance));
-            localStorage.setItem('fk_lab_kontak_v12', JSON.stringify(dataKontak));
+            localStorage.setItem('fk_lab_ruangan_v13', JSON.stringify(dataRuangan));
+            localStorage.setItem('fk_lab_alat_v13', JSON.stringify(dataAlat));
+            localStorage.setItem('fk_lab_pem_ruangan_v13', JSON.stringify(dataPemakaianRuangan));
+            localStorage.setItem('fk_lab_pem_alat_v13', JSON.stringify(dataPemakaianAlat));
+            localStorage.setItem('fk_lab_maint_v13', JSON.stringify(dataMaintenance));
+            localStorage.setItem('fk_lab_kontak_v13', JSON.stringify(dataKontak));
         }
 
         function switchTab(tabId) {
@@ -681,8 +693,9 @@
                 select.innerHTML += `<option value="${r.id}">${r.nama} (Kap. ${r.kapasitas})</option>`;
                 let statusClass = r.status === 'Tersedia' ? 'status-ready' : (r.status === 'Terpakai' ? 'status-busy' : 'status-maintenance');
                 
-                let imgHTML = (r.foto && r.foto.trim() !== '') 
-                    ? `<img src="${r.foto}" class="card-img" alt="${r.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'card-header-icon\'>🏢</div>';">` 
+                let directFotoUrl = convertGDriveLink(r.foto);
+                let imgHTML = (directFotoUrl && directFotoUrl !== '') 
+                    ? `<img src="${directFotoUrl}" class="card-img" alt="${r.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'card-header-icon\'>🏢</div>';">` 
                     : `<div class="card-header-icon">🏢</div>`;
 
                 grid.innerHTML += `
@@ -746,8 +759,9 @@
                 selectMaint.innerHTML += `<option value="${a.nama}">${a.nama}</option>`;
 
                 let statusClass = a.status === 'Siap Pakai' ? 'status-ready' : (a.status === 'Sedang Digunakan' ? 'status-busy' : 'status-maintenance');
-                let imgHTML = (a.foto && a.foto.trim() !== '') 
-                    ? `<img src="${a.foto}" class="card-img" alt="${a.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'card-header-icon\' style=\'background-color:#1e293b;\'>🔬</div>';">` 
+                let directFotoUrl = convertGDriveLink(a.foto);
+                let imgHTML = (directFotoUrl && directFotoUrl !== '') 
+                    ? `<img src="${directFotoUrl}" class="card-img" alt="${a.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'card-header-icon\' style=\'background-color:#1e293b;\'>🔬</div>';">` 
                     : `<div class="card-header-icon" style="background-color:#1e293b;">🔬</div>`;
 
                 grid.innerHTML += `
@@ -819,9 +833,10 @@
         function renderKontak() {
             const grid = document.getElementById('gridKontak');
             grid.innerHTML = '';
-            dataKontak.forEach((c, idx) => {
-                let fotoHTML = (c.foto && c.foto.trim() !== '')
-                    ? `<img src="${c.foto}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'profile-photo\' style=\'display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;\'>👨‍⚕️</div>';">`
+            dataKontak.forEach((c) => {
+                let directFotoUrl = convertGDriveLink(c.foto);
+                let fotoHTML = (directFotoUrl && directFotoUrl !== '')
+                    ? `<img src="${directFotoUrl}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'profile-photo\' style=\'display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;\'>👨‍⚕️</div>';">`
                     : `<div class="profile-photo" style="display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;">👨‍⚕️</div>`;
 
                 let emailHTML = (c.email && c.email.trim() !== '' && c.email !== '-') ? `<p style="font-size:12px; color:#64748b; margin-bottom:10px;">✉️ ${c.email}</p>` : '';
@@ -1082,7 +1097,7 @@
                             <input type="text" id="edit_wa_${i}" value="${c.wa||''}" placeholder="No WhatsApp (628...)" class="form-control">
                             <input type="text" id="edit_email_${i}" value="${c.email||''}" placeholder="Email (Opsional)" class="form-control">
                         </div>
-                        <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto (https://...)" class="form-control" style="margin-top:6px;">
+                        <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto / Link Google Drive" class="form-control" style="margin-top:6px;">
                     </div>
                 `;
             });
