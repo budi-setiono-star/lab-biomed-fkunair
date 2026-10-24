@@ -1,156 +1,266 @@
-// INISIALISASI FIREBASE REALTIME DATABASE
-const firebaseConfig = {
-    databaseURL: "https://lab-biologi-kedokteran-default-rtdb.firebaseio.com"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pemakaian & Manajemen Laboratorium Biologi Kedokteran FK UNAIR</title>
+    
+    <!-- SDK FIREBASE REALTIME DATABASE VIA CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-let isAdmin = false;
-let currentDate = new Date(2026, 9, 1);
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; line-height: 1.5; }
+        
+        .bg-unair-blue { background-color: #002B49; }
+        .bg-unair-yellow { background-color: #FFC72C; }
 
-function convertGDriveLink(url) {
-    if (!url) return '';
-    url = url.trim();
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) {
-        return `https://lh3.googleusercontent.com/d/${match[1]}`;
-    }
-    return url;
-}
+        header { background-color: #002B49; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
+        .brand-info { display: flex; align-items: center; gap: 15px; }
+        .brand-logo { width: 50px; height: 50px; background-color: #FFC72C; color: #002B49; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border: 2px solid white; flex-shrink: 0; }
+        .brand-title h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: #ffffff; }
+        .brand-title p { font-size: 13px; color: #FFC72C; font-weight: 600; }
+        .brand-title small { font-size: 11px; color: #cbd5e1; display: block; margin-top: 2px; }
 
-let dataRuangan = [];
-let dataAlat = [];
-let dataPemakaianRuangan = [];
-let dataPemakaianAlat = [];
-let dataMaintenance = [];
-let dataKontak = [
-    { jabatan: "Kepala Laboratorium", nama: "Dr. dr. Resti Yuditha, M.Biomed", wa: "6281234567890", email: "resti.yuditha@fk.unair.ac.id", foto: "" },
-    { jabatan: "Laboran & Teknisi Utama", nama: "Slamet Riyadi, S.ST", wa: "6285222974300", email: "slamet.riyadi@fk.unair.ac.id", foto: "" },
-    { jabatan: "Admin Administrasi Lab", nama: "Nita Permata, A.Md", wa: "6281987654321", email: "nita.permata@fk.unair.ac.id", foto: "" }
-];
+        .admin-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-login { background-color: #FFC72C; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .btn-login:hover { background-color: #f59e0b; }
+        .badge-admin { background-color: #f59e0b; color: #000; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; }
 
-// SINKRONISASI REALTIME DENGAN NODUS FIREBASE
-function initRealtimeSync() {
-    // 1. Ruangan -> rooms
-    db.ref('rooms').on('value', (snapshot) => {
-        const val = snapshot.val();
-        dataRuangan = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-        renderRuangan();
-    });
+        nav { background-color: rgba(15, 23, 42, 0.6); border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; overflow-x: auto; gap: 5px; }
+        .nav-btn { background: none; border: none; color: #94a3b8; padding: 12px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .nav-btn:hover, .nav-btn.active { color: white; border-bottom-color: #FFC72C; }
 
-    // 2. Alat -> equipments
-    db.ref('equipments').on('value', (snapshot) => {
-        const val = snapshot.val();
-        dataAlat = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-        renderAlat();
-    });
+        main { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .section-title { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .section-title h2 { font-size: 20px; color: #0f172a; }
+        .section-title p { font-size: 13px; color: #64748b; }
 
-    // 3. Pemakaian Ruangan -> roomBookings
-    db.ref('roomBookings').on('value', (snapshot) => {
-        const val = snapshot.val();
-        dataPemakaianRuangan = val ? Object.values(val) : [];
-        renderPemakaianRuangan();
-    });
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-img-container { height: 160px; width: 100%; background-color: #002B49; position: relative; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .card-header-icon { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 50px; color: white; }
+        .status-tag { position: absolute; top: 10px; right: 10px; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status-ready { background-color: #dcfce7; color: #166534; }
+        .status-busy { background-color: #fef3c7; color: #92400e; }
+        .status-maintenance { background-color: #fee2e2; color: #991b1b; }
+        
+        .card-body { padding: 15px; }
+        .card-body h3 { font-size: 16px; color: #0f172a; margin-bottom: 5px; }
+        .card-body p { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+        .card-badge { display: inline-block; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-bottom: 8px; }
+        
+        .card-footer { padding: 12px 15px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { background: none; border: none; color: #002B49; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-action:hover { text-decoration: underline; }
 
-    // 4. Pemakaian Alat -> usageLogs
-    db.ref('usageLogs').on('value', (snapshot) => {
-        const val = snapshot.val();
-        dataPemakaianAlat = val ? Object.values(val) : [];
-        renderPemakaianAlat();
-    });
+        .profile-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px auto; border: 3px solid #FFC72C; display: block; background: #e2e8f0; }
 
-    // 5. Maintenance -> maintenanceLogs
-    db.ref('maintenanceLogs').on('value', (snapshot) => {
-        const val = snapshot.val();
-        dataMaintenance = val ? Object.values(val) : [];
-        renderMaintenance();
-    });
+        .form-container { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
+        .form-control:focus { border-color: #002B49; }
+        .btn-submit { width: 100%; background-color: #002B49; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { background-color: #0f172a; }
 
-    // 6. Kontak -> kontak
-    db.ref('kontak').on('value', (snapshot) => {
-        const val = snapshot.val();
-        if(val) dataKontak = Array.isArray(val) ? val : Object.values(val);
-        renderKontak();
-    });
-}
+        .table-responsive { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #f8fafc; padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #334155; text-transform: uppercase; font-size: 11px; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #475569; }
+        tr:hover { background-color: #f8fafc; }
 
-function handlePengajuanRuangan(e) {
-    e.preventDefault();
-    const rId = parseInt(document.getElementById('p_ruangan').value);
-    const rObj = dataRuangan.find(x => x.id === rId);
-    const tgl = document.getElementById('p_tanggal').value;
-    const jamMulai = document.getElementById('p_jam_mulai').value;
-    const jamSelesai = document.getElementById('p_jam_selesai').value;
+        .calendar-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 25px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-header h3 { font-size: 16px; font-weight: 700; color: #002B49; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .calendar-day-head { font-size: 11px; font-weight: 700; color: #64748b; padding: 8px 0; background: #f8fafc; border-radius: 4px; text-transform: uppercase; }
+        .calendar-cell { min-height: 80px; border: 1px solid #f1f5f9; border-radius: 6px; padding: 4px; text-align: left; background: #fff; font-size: 11px; }
+        .calendar-cell.other-month { background: #f8fafc; color: #cbd5e1; }
+        .calendar-cell.today { border-color: #FFC72C; background-color: #fffbeb; }
+        .calendar-date-num { font-weight: 700; margin-bottom: 3px; font-size: 12px; color: #334155; }
+        .event-badge { font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; font-weight: 600; }
+        .event-approved { background-color: #059669; color: white; }
+        .event-pending { background-color: #d97706; color: white; }
 
-    const newId = 'RB_' + Date.now();
-    const newObj = {
-        id: newId,
-        pemohon: document.getElementById('p_nama').value,
-        nim: document.getElementById('p_nim').value,
-        instansi: document.getElementById('p_instansi').value,
-        ruanganId: rId,
-        ruanganNama: rObj ? rObj.nama : 'Ruangan',
-        jumlahPemakai: parseInt(document.getElementById('p_jumlah_pemakai').value) || 1,
-        tanggal: tgl,
-        jamMulai: jamMulai,
-        jamSelesai: jamSelesai,
-        status: 'Menunggu'
-    };
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .modal.open { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 520px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .modal-header { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #0f172a; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
+        .btn-cancel { background: #e2e8f0; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
-    db.ref('roomBookings/' + newId).set(newObj, (err) => {
-        if(!err) alert('Pengajuan pemakaian ruangan berhasil dikirim!');
-    });
-}
+        @media print {
+            body { background: white; color: black; }
+            header, nav, .admin-controls, .btn-action, .form-container, .btn-print, .no-print, .calendar-container { display: none !important; }
+            main { max-width: 100%; margin: 0; padding: 0; }
+            .card { border: none; box-shadow: none; }
+            .table-responsive { border: none; }
+            table, th, td { border: 1px solid #94a3b8 !important; }
+        }
 
-function handlePengajuanAlat(e) {
-    e.preventDefault();
-    const aId = parseInt(document.getElementById('pa_alat').value);
-    const aObj = dataAlat.find(x => x.id === aId);
-    const tgl = document.getElementById('pa_tanggal').value;
-    const jamMulai = document.getElementById('pa_jam_mulai').value;
-    const jamSelesai = document.getElementById('pa_jam_selesai').value;
+        .admin-only, .admin-only-inline { display: none; }
+        .btn-admin-add { background-color: #002B49; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-print { background-color: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-print:hover { background-color: #047857; }
+    </style>
+</head>
+<body>
 
-    const newId = 'UL_' + Date.now();
-    const newObj = {
-        id: newId,
-        pemohon: document.getElementById('pa_nama').value,
-        nim: document.getElementById('pa_nim').value,
-        instansi: document.getElementById('pa_instansi').value,
-        alatId: aId,
-        alatNama: aObj ? aObj.nama : 'Alat',
-        jumlah: parseInt(document.getElementById('pa_jumlah').value) || 1,
-        jumlahPemakai: parseInt(document.getElementById('pa_jumlah_pemakai').value) || 1,
-        tanggal: tgl,
-        jamMulai: jamMulai,
-        jamSelesai: jamSelesai,
-        status: 'Menunggu'
-    };
+    <header>
+        <div class="header-container">
+            <div class="brand-info">
+                <div class="brand-logo">🔬</div>
+                <div class="brand-title">
+                    <h1>Universitas Airlangga</h1>
+                    <p>Fakultas Kedokteran</p>
+                    <small>Laboratorium Biologi Kedokteran | 📍 Jl. Prof. Dr. Moestopo No.47, Surabaya, Jawa Timur</small>
+                </div>
+            </div>
+            <div class="admin-controls">
+                <span id="adminBadge" class="badge-admin">🛡️ Mode Admin</span>
+                <button id="loginBtn" onclick="toggleAdmin()" class="btn-login">Login Admin</button>
+            </div>
+        </div>
 
-    db.ref('usageLogs/' + newId).set(newObj, (err) => {
-        if(!err) alert('Pengajuan peminjaman alat berhasil dikirim!');
-    });
-}
+        <nav>
+            <div class="nav-container">
+                <button onclick="switchTab('ruangan')" id="tab-ruangan" class="nav-btn active">🚪 Katalog Ruangan</button>
+                <button onclick="switchTab('pemakaian-ruangan')" id="tab-pemakaian-ruangan" class="nav-btn">📅 Pemakaian Ruangan</button>
+                <button onclick="switchTab('alat')" id="tab-alat" class="nav-btn">🧪 Katalog Alat</button>
+                <button onclick="switchTab('pemakaian-alat')" id="tab-pemakaian-alat" class="nav-btn">📋 Pemakaian Alat</button>
+                <button onclick="switchTab('maintenance')" id="tab-maintenance" class="nav-btn">🔧 Maintenance Log</button>
+                <button onclick="switchTab('kontak')" id="tab-kontak" class="nav-btn">📇 Kontak Pengelola</button>
+            </div>
+        </nav>
+    </header>
 
-function setStatusRuangan(id, st) {
-    db.ref('roomBookings/' + id + '/status').set(st);
-}
+    <main>
+        <section id="sec-ruangan">
+            <div class="section-title">
+                <div>
+                    <h2>Katalog Ruangan Laboratorium</h2>
+                    <p>Daftar ruangan praktikum, kultur sel, dan penelitian Biologi Kedokteran</p>
+                </div>
+                <button onclick="openModalRuangan()" class="admin-only btn-admin-add">➕ Tambah Ruangan</button>
+            </div>
+            <div id="gridRuangan" class="grid"></div>
+        </section>
 
-function setStatusAlat(id, st) {
-    db.ref('usageLogs/' + id + '/status').set(st);
-}
+        <section id="sec-pemakaian-ruangan" style="display:none;">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <div>
+                        <h3>📅 Kalender Jadwal Pemakaian Ruangan</h3>
+                        <p style="font-size:12px; color:#64748b;">Periksa jadwal agar pemakaian tidak bentrok</p>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button onclick="prevMonth()" style="padding:4px 10px; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-weight:bold;">&lt;</button>
+                        <span id="calMonthYear" style="font-size:13px; font-weight:bold; color:#002B49;">Oktober 2026</span>
+                        <button onclick="nextMonth()" style="padding:4px 10px; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-weight:bold;">&gt;</button>
+                    </div>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-head">Min</div>
+                    <div class="calendar-day-head">Sen</div>
+                    <div class="calendar-day-head">Sel</div>
+                    <div class="calendar-day-head">Rab</div>
+                    <div class="calendar-day-head">Kam</div>
+                    <div class="calendar-day-head">Jum</div>
+                    <div class="calendar-day-head">Sab</div>
+                </div>
+                <div id="calendarCells" class="calendar-grid" style="margin-top:5px;"></div>
+            </div>
 
-function saveMaintenance(e) {
-    e.preventDefault();
-    const newId = 'ML_' + Date.now();
-    const newObj = {
-        id: newId,
-        tanggal: document.getElementById('mm_tanggal').value,
-        alatNama: document.getElementById('mm_alat').value,
-        jenis: document.getElementById('mm_jenis').value,
-        teknisi: document.getElementById('mm_teknisi').value,
-        kondisi: document.getElementById('mm_kondisi').value,
-        catatan: document.getElementById('mm_catatan').value
-    };
-    db.ref('maintenanceLogs/' + newId).set(newObj);
-    closeModal('modalMaintenance');
-}
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+                <div class="form-container">
+                    <h3 style="font-size:15px; margin-bottom:15px;">📝 Form Pemakaian Ruangan</h3>
+                    <form onsubmit="handlePengajuanRuangan(event)">
+                        <div class="form-group">
+                            <label>Nama Pemohon / Peneliti</label>
+                            <input type="text" id="p_nama" required class="form-control">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>NIM / NIP / NIK</label>
+                                <input type="text" id="p_nim" required class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Instansi / Prodi</label>
+                                <input type="text" id="p_instansi" required class="form-control" placeholder="FK Unair / S1 Kedokteran">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih Ruangan</label>
+                            <select id="p_ruangan" required class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Jumlah Pemakai (Orang)</label>
+                            <input type="number" id="p_jumlah_pemakai" min="1" value="1" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Pemakaian</label>
+                            <input type="date" id="p_tanggal" required class="form-control">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Jam Mulai</label>
+                                <input type="time" id="p_jam_mulai" required class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Jam Selesai</label>
+                                <input type="time" id="p_jam_selesai" required class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Keperluan / Judul Penelitian</label>
+                            <textarea id="p_keperluan" rows="2" required class="form-control"></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Ajukan Pemakaian Ruangan</button>
+                    </form>
+                </div>
+
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="font-size:15px;">📋 Daftar Status Pemakaian Ruangan</h3>
+                        <button onclick="cetakLaporan('Daftar Status Pemakaian Ruangan')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pemohon</th>
+                                    <th>Ruangan</th>
+                                    <th>Jml Pemakai</th>
+                                    <th>Jadwal</th>
+                                    <th>Status</th>
+                                    <th class="admin-only">Aksi Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelPemakaianRuangan"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-alat" style="display:none;">
+            <div class="section-title">
+                <div>
+                    <h2>Katalog Peralatan Laboratorium</h2>
+                    <p>Daftar medis & instrumen penelitian laboratorium</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="cetakLaporan('Katalog Peralatan Laboratorium')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
+                    <button onclick="openModalAlat()" class="admin-only btn-admin-add">➕ Tambah Alat</button>
+                </div>
+            </div>
+            <div id="gridAlat" class="grid"></div>
+        </section>
+
+        <section id="sec-pemakaian-alat" style="display:none;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,
