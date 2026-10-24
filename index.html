@@ -90,7 +90,6 @@
 
         <!-- PANEL 2: PEMAKAIAN RUANGAN & KALENDER -->
         <section id="panel-pinjam-ruangan" class="hidden space-y-6">
-            <!-- KALENDER JADWAL -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b pb-3">
                     <div>
@@ -551,7 +550,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIK KESELURUHAN -->
+    <!-- JAVASCRIPT EXECUTABLE MANDIRI LOKAL & REALTIME -->
     <script>
         const initialRooms = [
             { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
@@ -651,7 +650,6 @@
             renderCalendar();
         }
 
-        // KATALOG RUANGAN ADMIN & PUBLIC
         function renderRuangan() {
             const grid = document.getElementById('ruangan-grid');
             if (!grid) return;
@@ -663,7 +661,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="relative h-48 bg-slate-100 border-b overflow-hidden">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80';">
                             <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-emerald-100 text-emerald-800">${item.status}</span>
                         </div>
                         <div class="p-4 space-y-2">
@@ -746,7 +744,6 @@
             }
         }
 
-        // KATALOG ALAT & FUNGSI EDIT TERMASUK FIELD SOP
         function renderKatalog() {
             const searchEl = document.getElementById('search-input');
             const catEl = document.getElementById('category-filter');
@@ -776,7 +773,7 @@
                 card.innerHTML = `
                     <div class="space-y-2">
                         <div class="h-40 bg-slate-100 rounded-lg overflow-hidden border">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80';">
                         </div>
                         <div class="flex justify-between items-start gap-2">
                             <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
@@ -867,7 +864,6 @@
             }
         }
 
-        // LOG MAINTENANCE ALAT
         function handleMaintenanceSubmit(e) {
             e.preventDefault();
             const equipmentName = document.getElementById('maint-equipment-select').value;
@@ -925,7 +921,6 @@
             }
         }
 
-        // KONTAK PENGELOLA YANG BISA DIEDIT ADMIN
         function renderContactDisplay() {
             document.getElementById('contact-name-display').innerText = window.contactData.name;
             document.getElementById('contact-role-display').innerText = window.contactData.role;
