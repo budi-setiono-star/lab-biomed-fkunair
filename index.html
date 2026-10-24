@@ -3,291 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pemakaian & Manajemen Lab Biologi Kedokteran FK UNAIR</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Sistem Manajemen Lab Biologi Kedokteran FK UNAIR</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .tab-btn.active { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: 700; }
+        .tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: 700; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header & Informasi Resmi -->
-    <header class="bg-indigo-950 text-white shadow-xl sticky top-0 z-40 border-b-4 border-amber-500">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-4">
-                <div class="bg-white p-2 rounded-xl shadow-md flex items-center justify-center">
-                    <i class="fa-solid fa-microscope text-3xl text-indigo-900"></i>
+    <!-- Header Utama -->
+    <header class="bg-indigo-950 text-white shadow-lg sticky top-0 z-40 border-b-4 border-amber-500">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-2 rounded-xl shadow text-indigo-900">
+                    <i class="fa-solid fa-microscope text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-lg sm:text-xl tracking-wide leading-tight">Laboratorium Biologi Kedokteran</h1>
-                    <p class="text-xs sm:text-sm text-amber-400 font-semibold">Fakultas Kedokteran Universitas Airlangga</p>
+                    <h1 class="font-bold text-lg leading-tight">Laboratorium Biologi Kedokteran</h1>
+                    <p class="text-xs text-amber-400 font-semibold">Fakultas Kedokteran Universitas Airlangga</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-3">
-                <div id="admin-badge" class="hidden bg-amber-500 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-user-shield"></i> Mode Admin Active
+                <div id="admin-badge" class="hidden bg-amber-500 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">
+                    <i class="fa-solid fa-user-shield"></i> Mode Admin
                 </div>
-                <button id="auth-btn" onclick="toggleAuthModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-indigo-700 transition">
-                    <i class="fa-solid fa-lock" id="auth-icon"></i>
-                    <span id="auth-btn-text">Login Admin</span>
+                <button onclick="openAuthModal()" id="auth-btn" class="bg-indigo-800 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold border border-indigo-700">
+                    Login Admin
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[76px] z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-6 text-sm font-medium text-slate-600">
-            <button onclick="switchTab('ruangan')" id="tab-ruangan" class="tab-btn py-4 whitespace-nowrap active flex items-center gap-2">
+    <!-- Navigasi Tab -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[72px] z-30">
+        <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto gap-6 text-sm font-medium text-slate-600">
+            <button onclick="showTab('ruangan')" id="btn-ruangan" class="tab-btn tab-active py-4 whitespace-nowrap flex items-center gap-2">
                 <i class="fa-solid fa-door-open"></i> Katalog Ruangan
             </button>
-            <button onclick="switchTab('katalog')" id="tab-katalog" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
+            <button onclick="showTab('katalog')" id="btn-katalog" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
                 <i class="fa-solid fa-boxes-stacked"></i> Katalog Alat
             </button>
-            <button onclick="switchTab('pemakaian')" id="tab-pemakaian" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
-                <i class="fa-solid fa-file-signature"></i> Pemakaian Alat
-            </button>
-            <button onclick="switchTab('maintenance')" id="tab-maintenance" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
-                <i class="fa-solid fa-screwdriver-wrench"></i> Maintenance Log
-            </button>
-            <button onclick="switchTab('kontak')" id="tab-kontak" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
+            <button onclick="showTab('kontak')" id="btn-kontak" class="tab-btn py-4 whitespace-nowrap flex items-center gap-2">
                 <i class="fa-solid fa-address-book"></i> Kontak Pengelola
             </button>
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    <!-- Konten Utama -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
 
-        <!-- PANEL 1: KATALOG RUANGAN -->
-        <section id="panel-ruangan" class="space-y-6">
+        <!-- TAB 1: KATALOG RUANGAN -->
+        <section id="tab-ruangan-panel" class="space-y-6">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-door-open text-indigo-600"></i> Katalog Ruangan Laboratorium
-                    </h3>
-                    <p class="text-xs text-slate-500">Daftar ruangan praktikum & penelitian Biologi Kedokteran</p>
+                    <h2 class="font-bold text-slate-800 text-base">Katalog Ruangan Laboratorium</h2>
+                    <p class="text-xs text-slate-500">Daftar ruangan praktikum & penelitian</p>
                 </div>
+                <button onclick="alert('Fitur Tambah Ruangan Aktif untuk Admin!')" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                    + Tambah Ruangan
+                </button>
+            </div>
+            <div id="ruangan-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- TAB 2: KATALOG ALAT -->
+        <section id="tab-katalog-panel" class="hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <button id="add-room-btn" onclick="openRoomModal()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-plus"></i> Tambah Ruangan
-                    </button>
+                    <h2 class="font-bold text-slate-800 text-base">Katalog Alat Laboratorium</h2>
+                    <p class="text-xs text-slate-500">Daftar peralatan medis & penelitian</p>
                 </div>
             </div>
-
-            <div id="ruangan-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="alat-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- PANEL 2: KATALOG ALAT -->
-        <section id="panel-katalog" class="hidden space-y-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-grow">
-                    <div class="relative w-full sm:w-72">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-input" oninput="renderKatalog()" placeholder="Cari nama alat..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <select id="category-filter" onchange="renderKatalog()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
-                        <option value="Semua">Semua Kategori</option>
-                        <option value="Mikroskopi">Mikroskopi</option>
-                        <option value="Biologi Molekuler">Biologi Molekuler</option>
-                        <option value="Preparasi Sampel">Preparasi Sampel</option>
-                        <option value="Analisis DNA">Analisis DNA</option>
-                        <option value="Inkubasi">Inkubasi</option>
-                        <option value="Fasilitas Khusus">Fasilitas Khusus</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                    <button id="add-equipment-btn" onclick="openEquipmentModal()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-plus"></i> Tambah Alat Baru
-                    </button>
-                </div>
-            </div>
-
-            <div id="katalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </section>
-
-        <!-- PANEL 3: PEMAKAIAN ALAT -->
-        <section id="panel-pemakaian" class="hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Form Pemakaian Alat -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
-                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                        <i class="fa-solid fa-file-pen text-indigo-600"></i> Form Pengajuan Pemakaian Alat
-                    </h3>
-                    <form onsubmit="handleUsageSubmit(event)" class="space-y-4">
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat Lab <span class="text-rose-500">*</span></label>
-                                <select id="usage-equipment-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"></select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Unit <span class="text-rose-500">*</span></label>
-                                <input type="number" id="usage-quantity" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pemakai / Peneliti</label>
-                                <input type="text" id="usage-borrower" required placeholder="Nama / NIM / NIP..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Orang <span class="text-rose-500">*</span></label>
-                                <input type="number" id="usage-people" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Instansi / Class / Prodi</label>
-                            <input type="text" id="usage-dept" required placeholder="Contoh: S1 Kedokteran FK UNAIR" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-
-                        <div class="border p-3 rounded-xl bg-slate-50 space-y-3">
-                            <span class="block text-xs font-bold text-indigo-900"><i class="fa-solid fa-calendar-days mr-1"></i> Jadwal Pemakaian Alat</span>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tanggal Pemakaian <span class="text-rose-500">*</span></label>
-                                <input type="date" id="usage-date" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
-                                    <input type="time" id="usage-start-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
-                                    <input type="time" id="usage-end-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Keperluan / Judul Penelitian</label>
-                            <textarea id="usage-purpose" rows="2" required placeholder="Deskripsi pemakaian alat..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold shadow-md transition">
-                            <i class="fa-solid fa-paper-plane mr-1"></i> Ajukan Pemakaian Alat
-                        </button>
-                    </form>
-                </div>
-
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="flex justify-between items-center mb-4 border-b pb-3">
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Pemakaian Alat
-                        </h3>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                                    <th class="p-3">Jadwal (Tgl & Waktu)</th>
-                                    <th class="p-3">Nama Alat & Unit</th>
-                                    <th class="p-3">Pemakai & Personel</th>
-                                    <th class="p-3">Keperluan</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Aksi Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usage-table-body" class="divide-y divide-slate-200"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PANEL 4: MAINTENANCE LOG -->
-        <section id="panel-maintenance" class="hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Form Input Maintenance -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
-                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-                        <i class="fa-solid fa-screwdriver-wrench text-amber-600"></i> Form Catatan Maintenance
-                    </h3>
-                    <form onsubmit="handleMaintenanceSubmit(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat Lab <span class="text-rose-500">*</span></label>
-                            <select id="maint-equipment-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"></select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kegiatan <span class="text-rose-500">*</span></label>
-                            <select id="maint-type" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
-                                <option value="Kalibrasi Rutin">Kalibrasi Rutin</option>
-                                <option value="Pemeliharaan Berkala">Pemeliharaan Berkala</option>
-                                <option value="Perbaikan Kerusakan">Perbaikan Kerusakan</option>
-                                <option value="Pembersihan / Sterilisasi">Pembersihan / Sterilisasi</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Pelaksanaan <span class="text-rose-500">*</span></label>
-                            <input type="date" id="maint-date" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Teknisi / Petugas</label>
-                            <input type="text" id="maint-technician" required placeholder="Nama Teknisi / Vendor..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Hasil & Catatan Pengerjaan</label>
-                            <textarea id="maint-notes" rows="3" required placeholder="Detail hasil pemeliharaan..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-lg text-sm font-semibold shadow-md transition">
-                            <i class="fa-solid fa-plus mr-1"></i> Tambah Log Maintenance
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Tabel Rekapitulasi Maintenance -->
-                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="text-base font-bold text-slate-800 mb-4 border-b pb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-amber-600"></i> Rekapitulasi Log Maintenance
-                    </h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                                    <th class="p-3">Tanggal</th>
-                                    <th class="p-3">Nama Alat</th>
-                                    <th class="p-3">Jenis Kegiatan</th>
-                                    <th class="p-3">Teknisi & Catatan</th>
-                                    <th class="p-3 text-right">Aksi Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="maintenance-table-body" class="divide-y divide-slate-200"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PANEL 5: KONTAK PENGELOLA -->
-        <section id="panel-kontak" class="hidden space-y-6">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-2xl mx-auto text-center space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="text-xl font-extrabold text-indigo-950">Pengelola Laboratorium</h3>
-                    <button id="edit-contact-btn" onclick="openContactModal()" class="admin-only hidden bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Edit Kontak
-                    </button>
-                </div>
-
-                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                    <div class="w-16 h-16 bg-indigo-900 text-amber-400 rounded-full flex items-center justify-center text-2xl mx-auto shadow-md">
+        <!-- TAB 3: KONTAK PENGELOLA -->
+        <section id="tab-kontak-panel" class="hidden space-y-6">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-xl mx-auto text-center space-y-4">
+                <h2 class="text-xl font-bold text-indigo-950 border-b pb-3">Kontak Pengelola Laboratorium</h2>
+                <div class="p-6 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <div class="w-16 h-16 bg-indigo-900 text-amber-400 rounded-full flex items-center justify-center text-2xl mx-auto shadow">
                         <i class="fa-solid fa-user-gear"></i>
                     </div>
-                    <div>
-                        <h4 id="contact-name-display" class="font-extrabold text-slate-800 text-lg">Budi Setiono, S.Si.</h4>
-                        <p id="contact-role-display" class="text-xs text-slate-500 font-semibold">Pengelola Lab Biologi Kedokteran FK UNAIR</p>
-                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg">Budi Setiono, S.Si.</h3>
+                    <p class="text-xs text-slate-500">Pengelola Lab Biologi Kedokteran FK UNAIR</p>
                     <div class="pt-2">
-                        <a id="contact-wa-link" href="https://wa.me/6285222974300" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-md">
-                            <i class="fa-brands fa-whatsapp text-base"></i> Hubungi Pengelola via WA (<span id="contact-phone-display">085222974300</span>)
+                        <a href="https://wa.me/6285222974300" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Hubungi via WA (085222974300)
                         </a>
                     </div>
                 </div>
@@ -296,205 +105,149 @@
 
     </main>
 
-    <!-- MODAL AUTHENTICATION ADMIN -->
+    <!-- Modal Login Admin -->
     <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
-                <i class="fa-solid fa-shield-halved text-indigo-600"></i> Login Admin
-            </h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
-                    <input type="text" id="auth-username" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
-                    <input type="password" id="auth-password" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="toggleAuthModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="button" onclick="doLogin()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Masuk</button>
-                </div>
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2">Login Admin</h3>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                <input type="text" id="auth-username" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                <input type="password" id="auth-password" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeAuthModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
+                <button type="button" onclick="doLogin()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Masuk</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL TAMBAH / EDIT RUANGAN -->
-    <div id="modal-room" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 id="room-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Ruangan Laboratory</h3>
-            <form onsubmit="handleRoomSubmit(event)" class="space-y-4">
-                <input type="hidden" id="room-key">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ruangan Lab <span class="text-rose-500">*</span></label>
-                    <input type="text" id="room-name" required placeholder="Contoh: Lab Praktikum Utama" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kapasitas (Orang) <span class="text-rose-500">*</span></label>
-                        <input type="number" id="room-capacity" min="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
-                        <select id="room-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Tersedia">Tersedia</option>
-                            <option value="Sedang Dipakai">Sedang Dipakai</option>
-                            <option value="Perawatan">Perawatan</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Fasilitas Utama</label>
-                    <textarea id="room-facilities" rows="2" placeholder="Fasilitas AC, Proyektor, Mikroskop..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
-                    <label class="block text-xs font-bold text-slate-700">URL Gambar / Foto Ruangan</label>
-                    <input type="text" id="room-image-url" placeholder="https://..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeRoomModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Ruangan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT / TAMBAH ALAT -->
-    <div id="modal-equipment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 id="equipment-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Alat Laboratory</h3>
-            <form onsubmit="handleEquipmentSubmit(event)" class="space-y-4">
-                <input type="hidden" id="eq-id">
-                <input type="hidden" id="eq-firebase-key">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Alat Lab <span class="text-rose-500">*</span></label>
-                    <input type="text" id="eq-name" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
-                        <select id="eq-category" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Mikroskopi">Mikroskopi</option>
-                            <option value="Biologi Molekuler">Biologi Molekuler</option>
-                            <option value="Preparasi Sampel">Preparasi Sampel</option>
-                            <option value="Analisis DNA">Analisis DNA</option>
-                            <option value="Inkubasi">Inkubasi</option>
-                            <option value="Fasilitas Khusus">Fasilitas Khusus</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
-                        <select id="eq-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
-                            <option value="Tersedia">Tersedia</option>
-                            <option value="Sedang Dipakai">Sedang Dipakai</option>
-                            <option value="Perawatan">Perawatan</option>
-                            <option value="Rusak">Rusak</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">SOP / Petunjuk Penggunaan Singkat</label>
-                    <textarea id="eq-sop" rows="3" placeholder="Langkah penggunaan & instruksi keselamatan kerja alat..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-
-                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
-                    <label class="block text-xs font-bold text-slate-700">Foto / Gambar Alat</label>
-                    <input type="text" id="eq-image-url" placeholder="Link URL Gambar..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeEquipmentModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Alat</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT KONTAK PENGELOLA -->
-    <div id="modal-contact" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Edit Kontak Pengelola</h3>
-            <form onsubmit="handleContactSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pengelola <span class="text-rose-500">*</span></label>
-                    <input type="text" id="contact-name-input" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan / Peran <span class="text-rose-500">*</span></label>
-                    <input type="text" id="contact-role-input" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP <span class="text-rose-500">*</span></label>
-                    <input type="text" id="contact-phone-input" required placeholder="085222974300" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeContactModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Kontak</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT EXECUTABLE MANDIRI -->
+    <!-- Script JavaScript Bawaan -->
     <script>
-        var initialRooms = [
-            { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
-            { id: "rm2", firebaseKey: "rm2", name: "Laboratorium Biologi Molekuler & Kultur Sel", capacity: 15, facilities: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80" },
-            { id: "rm3", firebaseKey: "rm3", name: "Ruang Diskusi & Seminar Lab", capacity: 25, facilities: "Smart TV, Sound System, Papan Tulis, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80" }
-        ];
-
-        var initialEquipments = [
-            { id: "eq1", firebaseKey: "eq1", name: "Mikroskop Binokuler Olympus CX21", category: "Mikroskopi", status: "Tersedia", sop: "1. Bersihkan lensa sebelum dan sesudah pakai.\n2. Matikan lampu jika tidak digunakan.", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80" },
-            { id: "eq2", firebaseKey: "eq2", name: "Mikroskop Binokuler Olympus CH20", category: "Mikroskopi", status: "Tersedia", sop: "Gunakan minyak imersi khusus untuk perbesaran 100x.", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80" }
-        ];
-
-        var initialContact = {
-            name: "Budi Setiono, S.Si.",
-            role: "Pengelola Lab Biologi Kedokteran FK UNAIR",
-            phone: "085222974300"
-        };
-
-        window.rooms = initialRooms;
-        window.equipments = initialEquipments;
-        window.usageLogs = [];
-        window.maintenanceLogs = [];
-        window.contactData = initialContact;
-        window.isAdmin = false;
-
-        function saveState() {
-            try {
-                localStorage.setItem('lab_rooms', JSON.stringify(window.rooms));
-                localStorage.setItem('lab_equipments', JSON.stringify(window.equipments));
-                localStorage.setItem('lab_usage_logs', JSON.stringify(window.usageLogs));
-                localStorage.setItem('lab_maint_logs', JSON.stringify(window.maintenanceLogs));
-                localStorage.setItem('lab_contact', JSON.stringify(window.contactData));
-            } catch (err) {
-                console.error(err);
+        // Data Dummy Ruangan
+        var dataRuangan = [
+            {
+                nama: "Laboratorium Praktikum Utama",
+                kapasitas: 40,
+                fasilitas: "Mikroskop, Meja Praktikum, Proyektor, AC",
+                status: "Tersedia",
+                gambar: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                nama: "Laboratorium Biologi Molekuler",
+                kapasitas: 15,
+                fasilitas: "Laminar Air Flow, CO2 Incubator, Centrifuge, AC",
+                status: "Tersedia",
+                gambar: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                nama: "Ruang Diskusi & Seminar Lab",
+                kapasitas: 25,
+                fasilitas: "Smart TV, Sound System, Papan Tulis, AC",
+                status: "Tersedia",
+                gambar: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80"
             }
+        ];
+
+        // Data Dummy Alat
+        var dataAlat = [
+            {
+                nama: "Mikroskop Binokuler Olympus CX21",
+                kategori: "Mikroskopi",
+                status: "Tersedia",
+                gambar: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                nama: "Centrifuge High Speed",
+                kategori: "Preparasi Sampel",
+                status: "Tersedia",
+                gambar: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        var isAdmin = false;
+
+        // Fungsi Menampilkan Ruangan
+        function renderRuangan() {
+            var container = document.getElementById('ruangan-container');
+            if (!container) return;
+            var html = '';
+            for (var i = 0; i < dataRuangan.length; i++) {
+                var item = dataRuangan[i];
+                html += '<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition">' +
+                    '<div>' +
+                        '<div class="relative h-48 bg-slate-100 overflow-hidden">' +
+                            '<img src="' + item.gambar + '" class="w-full h-full object-cover">' +
+                            '<span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">' + item.status + '</span>' +
+                        '</div>' +
+                        '<div class="p-4 space-y-2">' +
+                            '<h3 class="font-bold text-slate-800 text-sm">' + item.nama + '</h3>' +
+                            '<p class="text-xs text-slate-600"><i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <strong>' + item.kapasitas + ' Orang</strong></p>' +
+                            '<div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">' +
+                                '<strong>Fasilitas:</strong> ' + item.fasilitas +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+            container.innerHTML = html;
         }
 
-        function switchTab(tabName) {
-            ['ruangan', 'katalog', 'pemakaian', 'maintenance', 'kontak'].forEach(function(t) {
-                var p = document.getElementById('panel-' + t);
-                var btn = document.getElementById('tab-' + t);
-                if (p) p.classList.add('hidden');
-                if (btn) btn.classList.remove('active');
-            });
-            var activePanel = document.getElementById('panel-' + tabName);
-            var activeBtn = document.getElementById('tab-' + tabName);
+        // Fungsi Menampilkan Alat
+        function renderAlat() {
+            var container = document.getElementById('alat-container');
+            if (!container) return;
+            var html = '';
+            for (var i = 0; i < dataAlat.length; i++) {
+                var item = dataAlat[i];
+                html += '<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3">' +
+                    '<div class="h-40 bg-slate-100 rounded-lg overflow-hidden">' +
+                        '<img src="' + item.gambar + '" class="w-full h-full object-cover">' +
+                    '</div>' +
+                    '<div class="flex justify-between items-start">' +
+                        '<h3 class="font-bold text-slate-800 text-sm">' + item.nama + '</h3>' +
+                        '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">' + item.status + '</span>' +
+                    '</div>' +
+                    '<span class="inline-block text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded">' + item.kategori + '</span>' +
+                '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // Fungsi Perpindahan Tab
+        function showTab(tabName) {
+            var tabs = ['ruangan', 'katalog', 'kontak'];
+            for (var i = 0; i < tabs.length; i++) {
+                var name = tabs[i];
+                var panel = document.getElementById('tab-' + name + '-panel');
+                var btn = document.getElementById('btn-' + name);
+                if (panel) panel.classList.add('hidden');
+                if (btn) btn.classList.remove('tab-active');
+            }
+            var activePanel = document.getElementById('tab-' + tabName + '-panel');
+            var activeBtn = document.getElementById('btn-' + tabName);
             if (activePanel) activePanel.classList.remove('hidden');
-            if (activeBtn) activeBtn.classList.add('active');
+            if (activeBtn) activeBtn.classList.add('tab-active');
         }
 
-        function toggleAuthModal() {
-            if (window.isAdmin) {
-                window.isAdmin = false;
-                updateAdminUI();
-                alert('Keluar dari mode Admin.');
+        // Modal Login
+        function openAuthModal() {
+            if(isAdmin) {
+                isAdmin = false;
+                document.getElementById('admin-badge').classList.add('hidden');
+                document.getElementById('auth-btn').innerText = 'Login Admin';
+                var admins = document.querySelectorAll('.admin-only');
+                for(var i=0; i<admins.length; i++) admins[i].classList.add('hidden');
+                alert('Anda telah logout dari Mode Admin.');
             } else {
                 document.getElementById('modal-auth').classList.remove('hidden');
             }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
         }
 
         function doLogin() {
@@ -502,380 +255,23 @@
             var p = document.getElementById('auth-password').value.trim();
 
             if (u === 'admin' && p === 'SSi.admi') {
-                window.isAdmin = true;
-                updateAdminUI();
-                document.getElementById('modal-auth').classList.add('hidden');
+                isAdmin = true;
+                document.getElementById('admin-badge').classList.remove('hidden');
+                document.getElementById('auth-btn').innerText = 'Logout Admin';
+                var admins = document.querySelectorAll('.admin-only');
+                for(var i=0; i<admins.length; i++) admins[i].classList.remove('hidden');
+                closeAuthModal();
+                alert('Berhasil Login Admin!');
             } else {
-                alert('Username atau Password Admin Salah!\n\nUser: admin\nPass: SSi.admi');
+                alert('Username atau Password Salah!\nUser: admin\nPass: SSi.admi');
             }
         }
 
-        function updateAdminUI() {
-            var badge = document.getElementById('admin-badge');
-            var btnText = document.getElementById('auth-btn-text');
-            var adminElements = document.querySelectorAll('.admin-only');
-
-            if (window.isAdmin) {
-                if (badge) badge.classList.remove('hidden');
-                if (btnText) btnText.innerText = 'Logout Admin';
-                adminElements.forEach(function(el) { el.classList.remove('hidden'); });
-            } else {
-                if (badge) badge.classList.add('hidden');
-                if (btnText) btnText.innerText = 'Login Admin';
-                adminElements.forEach(function(el) { el.classList.add('hidden'); });
-            }
+        // Jalankan saat seluruh elemen siap
+        window.onload = function() {
             renderRuangan();
-            renderKatalog();
-            renderUsageTable();
-            renderMaintenanceTable();
-            renderContactDisplay();
-        }
-
-        function renderRuangan() {
-            var grid = document.getElementById('ruangan-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            window.rooms.forEach(function(item) {
-                var card = document.createElement('div');
-                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition';
-                card.innerHTML = `
-                    <div>
-                        <div class="relative h-48 bg-slate-100 border-b overflow-hidden">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                            <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm bg-emerald-100 text-emerald-800">${item.status}</span>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
-                            <div class="text-xs text-slate-600 flex items-center gap-2">
-                                <i class="fa-solid fa-users text-indigo-600"></i> Kapasitas: <span class="font-semibold">${item.capacity} Orang</span>
-                            </div>
-                            <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <strong>Fasilitas:</strong> ${item.facilities}
-                            </div>
-                        </div>
-                    </div>
-                    ${window.isAdmin ? `
-                        <div class="flex gap-2 p-3 pt-0 border-t mt-2">
-                            <button onclick="openRoomModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                            <button onclick="deleteRoom('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
-                        </div>
-                    ` : ''}
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function openRoomModal(key) {
-            document.getElementById('modal-room').classList.remove('hidden');
-            if (key) {
-                var item = window.rooms.find(function(r) { return r.firebaseKey === key || r.id === key; });
-                if (!item) return;
-                document.getElementById('room-modal-title').innerText = 'Edit Ruangan Laboratory';
-                document.getElementById('room-key').value = item.firebaseKey || key;
-                document.getElementById('room-name').value = item.name || '';
-                document.getElementById('room-capacity').value = item.capacity || 1;
-                document.getElementById('room-status').value = item.status || 'Tersedia';
-                document.getElementById('room-facilities').value = item.facilities || '';
-                document.getElementById('room-image-url').value = item.image || '';
-            } else {
-                document.getElementById('room-modal-title').innerText = 'Tambah Ruangan Laboratorium Baru';
-                document.getElementById('room-key').value = '';
-                document.getElementById('room-name').value = '';
-                document.getElementById('room-capacity').value = '20';
-                document.getElementById('room-facilities').value = '';
-                document.getElementById('room-image-url').value = '';
-            }
-        }
-
-        function closeRoomModal() {
-            document.getElementById('modal-room').classList.add('hidden');
-        }
-
-        function handleRoomSubmit(e) {
-            e.preventDefault();
-            var key = document.getElementById('room-key').value;
-            var name = document.getElementById('room-name').value;
-            var capacity = document.getElementById('room-capacity').value;
-            var status = document.getElementById('room-status').value;
-            var facilities = document.getElementById('room-facilities').value;
-            var image = document.getElementById('room-image-url').value || 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80';
-
-            if (key) {
-                var idx = window.rooms.findIndex(function(r) { return r.firebaseKey === key || r.id === key; });
-                if (idx !== -1) window.rooms[idx] = { id: key, firebaseKey: key, name: name, capacity: capacity, status: status, facilities: facilities, image: image };
-            } else {
-                var newKey = 'rm' + Date.now();
-                window.rooms.push({ id: newKey, firebaseKey: newKey, name: name, capacity: capacity, status: status, facilities: facilities, image: image });
-            }
-
-            saveState();
-            renderRuangan();
-            closeRoomModal();
-            alert('Data ruangan berhasil disimpan!');
-        }
-
-        function deleteRoom(key) {
-            if (confirm('Hapus ruangan ini dari katalog?')) {
-                window.rooms = window.rooms.filter(function(r) { return r.firebaseKey !== key && r.id !== key; });
-                saveState();
-                renderRuangan();
-            }
-        }
-
-        function renderKatalog() {
-            var searchEl = document.getElementById('search-input');
-            var catEl = document.getElementById('category-filter');
-            var grid = document.getElementById('katalog-grid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            var search = searchEl ? searchEl.value.toLowerCase() : '';
-            var category = catEl ? catEl.value : 'Semua';
-
-            var filtered = window.equipments.filter(function(e) {
-                var matchSearch = e.name ? e.name.toLowerCase().includes(search) : false;
-                var matchCat = category === 'Semua' || e.category === category;
-                return matchSearch && matchCat;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400">Tidak ada alat ditemukan.</div>';
-                return;
-            }
-
-            filtered.forEach(function(item) {
-                var card = document.createElement('div');
-                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition p-4 space-y-3';
-                var statusClass = item.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
-
-                card.innerHTML = `
-                    <div class="space-y-2">
-                        <div class="h-40 bg-slate-100 rounded-lg overflow-hidden border">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex justify-between items-start gap-2">
-                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${statusClass}">${item.status}</span>
-                        </div>
-                        <span class="inline-block text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded border border-indigo-100">${item.category}</span>
-                        ${item.sop ? `
-                            <div class="text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 text-slate-600 mt-2">
-                                <strong class="text-indigo-900 block mb-0.5"><i class="fa-solid fa-book-open mr-1"></i> SOP Penggunaan:</strong>
-                                ${item.sop.replace(/\n/g, '<br>')}
-                            </div>
-                        ` : ''}
-                    </div>
-                    ${window.isAdmin ? `
-                        <div class="flex gap-2 pt-2 border-t">
-                            <button onclick="openEquipmentModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                            <button onclick="deleteEquipment('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
-                        </div>
-                    ` : ''}
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function openEquipmentModal(key) {
-            var modal = document.getElementById('modal-equipment');
-            modal.classList.remove('hidden');
-
-            if (key) {
-                var item = window.equipments.find(function(e) { return e.firebaseKey === key || e.id === key; });
-                if (!item) return;
-                document.getElementById('equipment-modal-title').innerText = 'Edit Detail Alat';
-                document.getElementById('eq-id').value = item.id || '';
-                document.getElementById('eq-firebase-key').value = item.firebaseKey || key;
-                document.getElementById('eq-name').value = item.name || '';
-                document.getElementById('eq-category').value = item.category || 'Mikroskopi';
-                document.getElementById('eq-status').value = item.status || 'Tersedia';
-                document.getElementById('eq-sop').value = item.sop || '';
-                document.getElementById('eq-image-url').value = item.image || '';
-            } else {
-                document.getElementById('equipment-modal-title').innerText = 'Tambah Alat Laboratorium Baru';
-                document.getElementById('eq-id').value = '';
-                document.getElementById('eq-firebase-key').value = '';
-                document.getElementById('eq-name').value = '';
-                document.getElementById('eq-sop').value = '';
-                document.getElementById('eq-image-url').value = '';
-            }
-        }
-
-        function closeEquipmentModal() {
-            document.getElementById('modal-equipment').classList.add('hidden');
-        }
-
-        function handleEquipmentSubmit(e) {
-            e.preventDefault();
-            var key = document.getElementById('eq-firebase-key').value;
-            var name = document.getElementById('eq-name').value;
-            var category = document.getElementById('eq-category').value;
-            var status = document.getElementById('eq-status').value;
-            var sop = document.getElementById('eq-sop').value;
-            var image = document.getElementById('eq-image-url').value || 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80';
-
-            if (key) {
-                var index = window.equipments.findIndex(function(eq) { return eq.firebaseKey === key || eq.id === key; });
-                if (index !== -1) {
-                    window.equipments[index] = { id: key, firebaseKey: key, name: name, category: category, status: status, sop: sop, image: image };
-                }
-            } else {
-                var newKey = 'eq' + Date.now();
-                window.equipments.push({ id: newKey, firebaseKey: newKey, name: name, category: category, status: status, sop: sop, image: image });
-            }
-
-            saveState();
-            renderKatalog();
-            populateEquipmentDropdown();
-            populateMaintenanceDropdown();
-            closeEquipmentModal();
-            alert('Data alat berhasil disimpan!');
-        }
-
-        function deleteEquipment(key) {
-            if (confirm('Apakah Anda yakin ingin menghapus alat ini dari katalog?')) {
-                window.equipments = window.equipments.filter(function(e) { return e.firebaseKey !== key && e.id !== key; });
-                saveState();
-                renderKatalog();
-                populateEquipmentDropdown();
-                populateMaintenanceDropdown();
-            }
-        }
-
-        function handleMaintenanceSubmit(e) {
-            e.preventDefault();
-            var equipmentName = document.getElementById('maint-equipment-select').value;
-            var type = document.getElementById('maint-type').value;
-            var date = document.getElementById('maint-date').value;
-            var technician = document.getElementById('maint-technician').value;
-            var notes = document.getElementById('maint-notes').value;
-
-            var newLog = {
-                key: 'mt' + Date.now(),
-                equipmentName: equipmentName,
-                type: type,
-                date: date,
-                technician: technician,
-                notes: notes
-            };
-
-            window.maintenanceLogs.unshift(newLog);
-            saveState();
-            renderMaintenanceTable();
-            e.target.reset();
-            alert('Catatan maintenance berhasil ditambahkan!');
-        }
-
-        function renderMaintenanceTable() {
-            var tbody = document.getElementById('maintenance-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            if (window.maintenanceLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada catatan pemeliharaan alat.</td></tr>';
-                return;
-            }
-
-            window.maintenanceLogs.forEach(function(log) {
-                var tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-3 font-semibold text-slate-700">${log.date}</td>
-                    <td class="p-3 font-bold text-slate-800">${log.equipmentName}</td>
-                    <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-semibold text-[10px]">${log.type}</span></td>
-                    <td class="p-3"><strong class="text-slate-800">${log.technician}:</strong> ${log.notes}</td>
-                    <td class="p-3 text-right">
-                        ${window.isAdmin ? `<button onclick="deleteMaintenanceLog('${log.key}')" class="bg-rose-100 text-rose-600 px-2 py-1 rounded text-[10px] hover:bg-rose-200"><i class="fa-solid fa-trash"></i></button>` : '-'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function deleteMaintenanceLog(key) {
-            if (confirm('Hapus catatan maintenance ini?')) {
-                window.maintenanceLogs = window.maintenanceLogs.filter(function(m) { return m.key !== key; });
-                saveState();
-                renderMaintenanceTable();
-            }
-        }
-
-        function renderContactDisplay() {
-            document.getElementById('contact-name-display').innerText = window.contactData.name;
-            document.getElementById('contact-role-display').innerText = window.contactData.role;
-            document.getElementById('contact-phone-display').innerText = window.contactData.phone;
-            
-            var cleanPhone = window.contactData.phone.replace(/[^0-9]/g, '');
-            var waPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
-            document.getElementById('contact-wa-link').href = 'https://wa.me/' + waPhone;
-        }
-
-        function openContactModal() {
-            document.getElementById('modal-contact').classList.remove('hidden');
-            document.getElementById('contact-name-input').value = window.contactData.name;
-            document.getElementById('contact-role-input').value = window.contactData.role;
-            document.getElementById('contact-phone-input').value = window.contactData.phone;
-        }
-
-        function closeContactModal() {
-            document.getElementById('modal-contact').classList.add('hidden');
-        }
-
-        function handleContactSubmit(e) {
-            e.preventDefault();
-            window.contactData = {
-                name: document.getElementById('contact-name-input').value,
-                role: document.getElementById('contact-role-input').value,
-                phone: document.getElementById('contact-phone-input').value
-            };
-            saveState();
-            renderContactDisplay();
-            closeContactModal();
-            alert('Informasi kontak pengelola berhasil diperbarui!');
-        }
-
-        function populateEquipmentDropdown() {
-            var select = document.getElementById('usage-equipment-select');
-            if (!select) return;
-            select.innerHTML = '';
-            window.equipments.forEach(function(eq) {
-                var opt = document.createElement('option');
-                opt.value = eq.name;
-                opt.innerText = eq.name + ' (' + eq.status + ')';
-                select.appendChild(opt);
-            });
-        }
-
-        function populateMaintenanceDropdown() {
-            var select = document.getElementById('maint-equipment-select');
-            if (!select) return;
-            select.innerHTML = '';
-            window.equipments.forEach(function(eq) {
-                var opt = document.createElement('option');
-                opt.value = eq.name;
-                opt.innerText = eq.name;
-                select.appendChild(opt);
-            });
-        }
-
-        function handleUsageSubmit(e) {
-            e.preventDefault();
-            var equipmentName = document.getElementById('usage-equipment-select').value;
-            var quantity = document.getElementById('usage-quantity').value || 1;
-            var borrower = document.getElementById('usage-borrower').value;
-            var people = document.getElementById('usage-people').value || 1;
-            var dept = document.getElementById('usage-dept').value;
-            var purpose = document.getElementById('usage-purpose').value;
-            var dateVal = document.getElementById('usage-date').value;
-            var startTime = document.getElementById('usage-start-time').value;
-            var endTime = document.getElementById('usage-end-time').value;
-
-            var newUsage = {
-                firebaseKey: 'us' + Date.now(),
-                equipmentName: equipmentName,
-                quantity: quantity,
-                borrower: borrower + ' (' + dept + ')',
-                peopleCount: people,
-                purpose: purpose,
-                date: dateVal,
-                timeSchedule: startTime + ' -
+            renderAlat();
+        };
+    </script>
+</body>
+</html>
