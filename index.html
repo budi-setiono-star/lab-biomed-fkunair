@@ -190,7 +190,7 @@
                                     <th class="p-3">Pemakai & Peserta</th>
                                     <th class="p-3">Agenda Kegiatan</th>
                                     <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Aksi</th>
+                                    <th class="p-3 text-right">Aksi Admin</th>
                                 </tr>
                             </thead>
                             <tbody id="room-booking-table-body" class="divide-y divide-slate-200"></tbody>
@@ -208,6 +208,21 @@
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="search-input" oninput="renderKatalog()" placeholder="Cari nama alat..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
+                    <select id="category-filter" onchange="renderKatalog()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
+                        <option value="Semua">Semua Kategori</option>
+                        <option value="Mikroskopi">Mikroskopi</option>
+                        <option value="Biologi Molekuler">Biologi Molekuler</option>
+                        <option value="Preparasi Sampel">Preparasi Sampel</option>
+                        <option value="Analisis DNA">Analisis DNA</option>
+                        <option value="Inkubasi">Inkubasi</option>
+                        <option value="Fasilitas Khusus">Fasilitas Khusus</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                    <button id="add-equipment-btn" onclick="openEquipmentModal()" class="admin-only hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Tambah Alat Baru
+                    </button>
                 </div>
             </div>
 
@@ -216,9 +231,91 @@
 
         <!-- PANEL 4: PEMAKAIAN ALAT -->
         <section id="panel-pemakaian" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="text-base font-bold text-slate-800 mb-4 border-b pb-3">Riwayat Pemakaian Alat</h3>
-                <div id="usage-list" class="text-xs text-slate-500">Belum ada riwayat pemakaian alat.</div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Form Pemakaian Alat -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-file-pen text-indigo-600"></i> Form Pengajuan Pemakaian Alat
+                    </h3>
+                    <form onsubmit="handleUsageSubmit(event)" class="space-y-4">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat Lab <span class="text-rose-500">*</span></label>
+                                <select id="usage-equipment-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Unit <span class="text-rose-500">*</span></label>
+                                <input type="number" id="usage-quantity" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pemakai / Peneliti</label>
+                                <input type="text" id="usage-borrower" required placeholder="Nama / NIM / NIP..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jml Orang <span class="text-rose-500">*</span></label>
+                                <input type="number" id="usage-people" min="1" value="1" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Instansi / Class / Prodi</label>
+                            <input type="text" id="usage-dept" required placeholder="Contoh: S1 Kedokteran FK UNAIR" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <div class="border p-3 rounded-xl bg-slate-50 space-y-3">
+                            <span class="block text-xs font-bold text-indigo-900"><i class="fa-solid fa-calendar-days mr-1"></i> Jadwal Pemakaian Alat</span>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tanggal Pemakaian <span class="text-rose-500">*</span></label>
+                                <input type="date" id="usage-date" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
+                                    <input type="time" id="usage-start-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
+                                    <input type="time" id="usage-end-time" required class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Keperluan / Judul Penelitian</label>
+                            <textarea id="usage-purpose" rows="2" required placeholder="Deskripsi pemakaian alat..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-semibold shadow-md transition">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> Ajukan Pemakaian Alat
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i> Rekapitulasi Pemakaian Alat
+                        </h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                    <th class="p-3">Jadwal (Tgl & Waktu)</th>
+                                    <th class="p-3">Nama Alat & Unit</th>
+                                    <th class="p-3">Pemakai & Personel</th>
+                                    <th class="p-3">Keperluan</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Aksi Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usage-table-body" class="divide-y divide-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -267,7 +364,54 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT EXECUTABLE INSTANT -->
+    <!-- MODAL EDIT/TAMBAH ALAT -->
+    <div id="modal-equipment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 id="equipment-modal-title" class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Kelola Alat Laboratory</h3>
+            <form onsubmit="handleEquipmentSubmit(event)" class="space-y-4">
+                <input type="hidden" id="eq-id">
+                <input type="hidden" id="eq-firebase-key">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Alat Lab</label>
+                    <input type="text" id="eq-name" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
+                        <select id="eq-category" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
+                            <option value="Mikroskopi">Mikroskopi</option>
+                            <option value="Biologi Molekuler">Biologi Molekuler</option>
+                            <option value="Preparasi Sampel">Preparasi Sampel</option>
+                            <option value="Analisis DNA">Analisis DNA</option>
+                            <option value="Inkubasi">Inkubasi</option>
+                            <option value="Fasilitas Khusus">Fasilitas Khusus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status Ketersediaan</label>
+                        <select id="eq-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none bg-slate-50">
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Sedang Dipakai">Sedang Dipakai</option>
+                            <option value="Perawatan">Perawatan</option>
+                            <option value="Rusak">Rusak</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="border p-3 rounded-xl bg-slate-50 space-y-2">
+                    <label class="block text-xs font-bold text-slate-700">Foto / Gambar Alat</label>
+                    <input type="text" id="eq-image-url" placeholder="Link URL Gambar / Google Drive..." class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeEquipmentModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Simpan Alat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIK KESELURUHAN -->
     <script>
         const initialRooms = [
             { id: "rm1", firebaseKey: "rm1", name: "Laboratorium Praktikum Utama", capacity: 40, facilities: "Mikroskop, Meja Praktikum, Proyektor, AC", status: "Tersedia", image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80" },
@@ -283,6 +427,7 @@
         window.rooms = JSON.parse(localStorage.getItem('lab_rooms')) || initialRooms;
         window.equipments = JSON.parse(localStorage.getItem('lab_equipments')) || initialEquipments;
         window.roomBookings = JSON.parse(localStorage.getItem('lab_room_bookings')) || [];
+        window.usageLogs = JSON.parse(localStorage.getItem('lab_usage_logs')) || [];
         window.isAdmin = false;
         let currentDate = new Date();
 
@@ -290,6 +435,7 @@
             localStorage.setItem('lab_rooms', JSON.stringify(window.rooms));
             localStorage.setItem('lab_equipments', JSON.stringify(window.equipments));
             localStorage.setItem('lab_room_bookings', JSON.stringify(window.roomBookings));
+            localStorage.setItem('lab_usage_logs', JSON.stringify(window.usageLogs));
         }
 
         function switchTab(tabName) {
@@ -334,15 +480,21 @@
         function updateAdminUI() {
             const badge = document.getElementById('admin-badge');
             const btnText = document.getElementById('auth-btn-text');
+            const adminElements = document.querySelectorAll('.admin-only');
+
             if (window.isAdmin) {
                 if (badge) badge.classList.remove('hidden');
                 if (btnText) btnText.innerText = 'Logout Admin';
+                adminElements.forEach(el => el.classList.remove('hidden'));
             } else {
                 if (badge) badge.classList.add('hidden');
                 if (btnText) btnText.innerText = 'Login Admin';
+                adminElements.forEach(el => el.classList.add('hidden'));
             }
             renderRuangan();
+            renderKatalog();
             renderRoomBookingTable();
+            renderUsageTable();
             renderCalendar();
         }
 
@@ -375,16 +527,115 @@
             });
         }
 
+        // KATALOG ALAT & FUNGSI EDIT ADMIN
         function renderKatalog() {
+            const searchEl = document.getElementById('search-input');
+            const catEl = document.getElementById('category-filter');
             const grid = document.getElementById('katalog-grid');
             if (!grid) return;
+            
             grid.innerHTML = '';
-            window.equipments.forEach(item => {
+            const search = searchEl ? searchEl.value.toLowerCase() : '';
+            const category = catEl ? catEl.value : 'Semua';
+
+            const filtered = window.equipments.filter(e => {
+                const matchSearch = e.name ? e.name.toLowerCase().includes(search) : false;
+                const matchCat = category === 'Semua' || e.category === category;
+                return matchSearch && matchCat;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400">Tidak ada alat ditemukan.</div>';
+                return;
+            }
+
+            filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl border border-slate-200 p-4 space-y-2';
-                card.innerHTML = `<h3 class="font-bold text-slate-800 text-sm">${item.name}</h3><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded">${item.category}</span>`;
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition p-4 space-y-3';
+                
+                const statusClass = item.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="h-40 bg-slate-100 rounded-lg overflow-hidden border">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex justify-between items-start gap-2">
+                            <h3 class="font-bold text-slate-800 text-sm">${item.name}</h3>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${statusClass}">${item.status}</span>
+                        </div>
+                        <span class="inline-block text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded border border-indigo-100">${item.category}</span>
+                    </div>
+                    ${window.isAdmin ? `
+                        <div class="flex gap-2 pt-2 border-t">
+                            <button onclick="openEquipmentModal('${item.firebaseKey}')" class="flex-1 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            <button onclick="deleteEquipment('${item.firebaseKey}')" class="flex-1 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-trash"></i> Hapus</button>
+                        </div>
+                    ` : ''}
+                `;
                 grid.appendChild(card);
             });
+        }
+
+        function openEquipmentModal(key = null) {
+            const modal = document.getElementById('modal-equipment');
+            modal.classList.remove('hidden');
+
+            if (key) {
+                const item = window.equipments.find(e => e.firebaseKey === key || e.id === key);
+                if (!item) return;
+                document.getElementById('equipment-modal-title').innerText = 'Edit Detail Alat';
+                document.getElementById('eq-id').value = item.id || '';
+                document.getElementById('eq-firebase-key').value = item.firebaseKey || key;
+                document.getElementById('eq-name').value = item.name || '';
+                document.getElementById('eq-category').value = item.category || 'Mikroskopi';
+                document.getElementById('eq-status').value = item.status || 'Tersedia';
+                document.getElementById('eq-image-url').value = item.image || '';
+            } else {
+                document.getElementById('equipment-modal-title').innerText = 'Tambah Alat Laboratorium Baru';
+                document.getElementById('eq-id').value = '';
+                document.getElementById('eq-firebase-key').value = '';
+                document.getElementById('eq-name').value = '';
+                document.getElementById('eq-image-url').value = '';
+            }
+        }
+
+        function closeEquipmentModal() {
+            document.getElementById('modal-equipment').classList.add('hidden');
+        }
+
+        function handleEquipmentSubmit(e) {
+            e.preventDefault();
+            const key = document.getElementById('eq-firebase-key').value;
+            const name = document.getElementById('eq-name').value;
+            const category = document.getElementById('eq-category').value;
+            const status = document.getElementById('eq-status').value;
+            const image = document.getElementById('eq-image-url').value || 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80';
+
+            if (key) {
+                const index = window.equipments.findIndex(eq => eq.firebaseKey === key || eq.id === key);
+                if (index !== -1) {
+                    window.equipments[index] = { ...window.equipments[index], name, category, status, image };
+                }
+            } else {
+                const newKey = 'eq' + Date.now();
+                window.equipments.push({ id: newKey, firebaseKey: newKey, name, category, status, image });
+            }
+
+            saveState();
+            renderKatalog();
+            populateEquipmentDropdown();
+            closeEquipmentModal();
+            alert('Data alat berhasil disimpan!');
+        }
+
+        function deleteEquipment(key) {
+            if (confirm('Apakah Anda yakin ingin menghapus alat ini dari katalog?')) {
+                window.equipments = window.equipments.filter(e => e.firebaseKey !== key && e.id !== key);
+                saveState();
+                renderKatalog();
+                populateEquipmentDropdown();
+            }
         }
 
         function populateRoomDropdowns() {
@@ -399,7 +650,19 @@
             });
         }
 
-        // DETEKSI BENTROK JADWAL OTOMATIS
+        function populateEquipmentDropdown() {
+            const select = document.getElementById('usage-equipment-select');
+            if (!select) return;
+            select.innerHTML = '';
+            window.equipments.forEach(eq => {
+                const opt = document.createElement('option');
+                opt.value = eq.name;
+                opt.innerText = `${eq.name} (${eq.status})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // DETEKSI BENTROK JADWAL RUANGAN OTOMATIS
         function handleRoomBookingSubmit(e) {
             e.preventDefault();
             const roomName = document.getElementById('booking-room-select').value;
@@ -449,6 +712,7 @@
             alert('Pemakaian ruangan berhasil diajukan!');
         }
 
+        // REKAPITULASI PEMAKAIAN RUANGAN & AKSI ADMIN (SETUJUI / TOLAK)
         function renderRoomBookingTable() {
             const tbody = document.getElementById('room-booking-table-body');
             if (!tbody) return;
@@ -461,7 +725,12 @@
 
             window.roomBookings.forEach(log => {
                 const tr = document.createElement('tr');
-                const badgeClass = log.status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+                const badgeClass = {
+                    'Disetujui': 'bg-emerald-100 text-emerald-800',
+                    'Menunggu Persetujuan': 'bg-amber-100 text-amber-800',
+                    'Ditolak': 'bg-rose-100 text-rose-800',
+                    'Selesai': 'bg-slate-100 text-slate-700'
+                }[log.status] || 'bg-slate-100';
 
                 tr.innerHTML = `
                     <td class="p-3"><strong>${log.date}</strong><br><span class="text-indigo-600">${log.timeSchedule}</span></td>
@@ -470,7 +739,18 @@
                     <td class="p-3">${log.purpose}</td>
                     <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${log.status}</span></td>
                     <td class="p-3 text-right">
-                        ${window.isAdmin ? `<button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px]">Setujui</button>` : '-'}
+                        ${window.isAdmin ? `
+                            <div class="flex justify-end gap-1">
+                                ${log.status === 'Menunggu Persetujuan' ? `
+                                    <button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-[10px] font-bold">Setujui</button>
+                                    <button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Ditolak')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-[10px] font-bold">Tolak</button>
+                                ` : ''}
+                                ${log.status === 'Disetujui' ? `
+                                    <button onclick="updateRoomBookingStatus('${log.firebaseKey}', 'Selesai')" class="bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded text-[10px] font-bold">Selesai</button>
+                                ` : ''}
+                                <button onclick="deleteRoomBookingLog('${log.firebaseKey}')" class="bg-slate-200 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        ` : '-'}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -479,9 +759,117 @@
 
         function updateRoomBookingStatus(key, status) {
             const item = window.roomBookings.find(b => b.firebaseKey === key);
-            if (item) { item.status = status; saveState(); renderRoomBookingTable(); renderCalendar(); }
+            if (item) {
+                item.status = status;
+                saveState();
+                renderRoomBookingTable();
+                renderCalendar();
+            }
         }
 
+        function deleteRoomBookingLog(key) {
+            if (confirm('Hapus riwayat pengajuan ini?')) {
+                window.roomBookings = window.roomBookings.filter(b => b.firebaseKey !== key);
+                saveState();
+                renderRoomBookingTable();
+                renderCalendar();
+            }
+        }
+
+        // PEMAKAIAN ALAT & AKSI ADMIN
+        function handleUsageSubmit(e) {
+            e.preventDefault();
+            const equipmentName = document.getElementById('usage-equipment-select').value;
+            const quantity = document.getElementById('usage-quantity').value || 1;
+            const borrower = document.getElementById('usage-borrower').value;
+            const people = document.getElementById('usage-people').value || 1;
+            const dept = document.getElementById('usage-dept').value;
+            const purpose = document.getElementById('usage-purpose').value;
+            const dateVal = document.getElementById('usage-date').value;
+            const startTime = document.getElementById('usage-start-time').value;
+            const endTime = document.getElementById('usage-end-time').value;
+
+            const newUsage = {
+                firebaseKey: 'us' + Date.now(),
+                equipmentName,
+                quantity,
+                borrower: `${borrower} (${dept})`,
+                peopleCount: people,
+                purpose,
+                date: dateVal,
+                timeSchedule: `${startTime} - ${endTime} WIB`,
+                status: 'Menunggu Persetujuan'
+            };
+
+            window.usageLogs.unshift(newUsage);
+            saveState();
+            renderUsageTable();
+            e.target.reset();
+            alert('Permohonan pemakaian alat berhasil diajukan!');
+        }
+
+        function renderUsageTable() {
+            const tbody = document.getElementById('usage-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (window.usageLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada riwayat pemakaian alat.</td></tr>';
+                return;
+            }
+
+            window.usageLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                const badgeClass = {
+                    'Disetujui': 'bg-emerald-100 text-emerald-800',
+                    'Menunggu Persetujuan': 'bg-amber-100 text-amber-800',
+                    'Ditolak': 'bg-rose-100 text-rose-800',
+                    'Selesai': 'bg-slate-100 text-slate-700'
+                }[log.status] || 'bg-slate-100';
+
+                tr.innerHTML = `
+                    <td class="p-3"><strong>${log.date}</strong><br><span class="text-indigo-600">${log.timeSchedule}</span></td>
+                    <td class="p-3 font-semibold text-slate-800">${log.equipmentName} (${log.quantity} Unit)</td>
+                    <td class="p-3">${log.borrower}</td>
+                    <td class="p-3">${log.purpose}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${log.status}</span></td>
+                    <td class="p-3 text-right">
+                        ${window.isAdmin ? `
+                            <div class="flex justify-end gap-1">
+                                ${log.status === 'Menunggu Persetujuan' ? `
+                                    <button onclick="updateUsageStatus('${log.firebaseKey}', 'Disetujui')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-[10px] font-bold">Setujui</button>
+                                    <button onclick="updateUsageStatus('${log.firebaseKey}', 'Ditolak')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-[10px] font-bold">Tolak</button>
+                                ` : ''}
+                                ${log.status === 'Disetujui' ? `
+                                    <button onclick="updateUsageStatus('${log.firebaseKey}', 'Selesai')" class="bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded text-[10px] font-bold">Selesai</button>
+                                ` : ''}
+                                <button onclick="deleteUsageLog('${log.firebaseKey}')" class="bg-slate-200 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        ` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateUsageStatus(key, status) {
+            const item = window.usageLogs.find(u => u.firebaseKey === key);
+            if (item) {
+                item.status = status;
+                saveState();
+                renderUsageTable();
+            }
+        }
+
+        function deleteUsageLog(key) {
+            if (confirm('Hapus catatan pemakaian alat ini?')) {
+                window.usageLogs = window.usageLogs.filter(u => u.firebaseKey !== key);
+                saveState();
+                renderUsageTable();
+            }
+        }
+
+        // KALENDER PEMAKAIAN
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
             const title = document.getElementById('cal-month-title');
@@ -510,7 +898,7 @@
                 cell.className = 'border border-slate-200 p-1 min-h-[70px] bg-white rounded-lg flex flex-col justify-between';
                 cell.innerHTML = `<span class="font-bold text-slate-700 text-[11px]">${day}</span>`;
 
-                const dayBookings = window.roomBookings.filter(b => b.rawDate === isoDate);
+                const dayBookings = window.roomBookings.filter(b => b.rawDate === isoDate && b.status !== 'Ditolak');
                 dayBookings.forEach(b => {
                     const bEl = document.createElement('div');
                     bEl.className = `text-[9px] p-1 rounded font-semibold leading-tight mt-1 ${b.status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
@@ -527,17 +915,15 @@
             renderCalendar();
         }
 
-        // INIT LOAD ON STARTUP
         document.addEventListener('DOMContentLoaded', function() {
             renderRuangan();
             renderKatalog();
             populateRoomDropdowns();
+            populateEquipmentDropdown();
             renderRoomBookingTable();
+            renderUsageTable();
             renderCalendar();
 
             const today = new Date().toISOString().split('T')[0];
             if (document.getElementById('booking-date')) document.getElementById('booking-date').value = today;
-        });
-    </script>
-</body>
-</html>
+            if (document
