@@ -60,7 +60,7 @@
         .btn-action:hover { text-decoration: underline; }
 
         /* Profile Photo for Pengelola */
-        .profile-photo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px auto; border: 3px solid #FFC72C; display: block; background: #e2e8f0; }
+        .profile-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px auto; border: 3px solid #FFC72C; display: block; background: #e2e8f0; }
 
         /* Forms & Inputs */
         .form-container { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
@@ -95,7 +95,7 @@
         /* Modal Popups */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal.open { display: flex; }
-        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 480px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 520px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
         .modal-header { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #0f172a; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
         .btn-cancel { background: #e2e8f0; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -163,7 +163,6 @@
 
         <!-- 2. PEMAKAIAN RUANGAN -->
         <section id="sec-pemakaian-ruangan" style="display:none;">
-            
             <!-- MODUL KALENDER RUANGAN INTERAKTIF -->
             <div class="calendar-container">
                 <div class="calendar-header">
@@ -509,12 +508,14 @@
     <div id="modalKontak" class="modal">
         <div class="modal-content">
             <div class="modal-header">Edit Kontak & Foto Pengelola</div>
-            <p style="font-size:11px; color:#64748b; margin-bottom:10px;">* Seluruh isian bersifat opsional (tidak wajib diisi).</p>
+            <p style="font-size:11px; color:#64748b; margin-bottom:12px;">
+                * Gunakan link gambar/foto dari internet (URL berawalan https://...). Jika tidak ada foto, kosongkan saja.
+            </p>
             <form onsubmit="saveKontak(event)">
-                <div id="containerFormKontak" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <div id="containerFormKontak" style="display:flex; flex-direction:column; gap:12px;"></div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeModal('modalKontak')" class="btn-cancel">Batal</button>
-                    <button type="submit" class="btn-submit" style="width:auto; margin-top:0;">Simpan</button>
+                    <button type="submit" class="btn-submit" style="width:auto; margin-top:0;">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
@@ -556,20 +557,20 @@
             { jabatan: "Admin Administrasi Lab", nama: "Nita Permata, A.Md", wa: "6281987654321", email: "nita.permata@fk.unair.ac.id", foto: "" }
         ];
 
-        let dataRuangan = JSON.parse(localStorage.getItem('fk_lab_ruangan_v11')) || defaultRuangan;
-        let dataAlat = JSON.parse(localStorage.getItem('fk_lab_alat_v11')) || defaultAlat;
-        let dataPemakaianRuangan = JSON.parse(localStorage.getItem('fk_lab_pem_ruangan_v11')) || defaultPemakaianRuangan;
-        let dataPemakaianAlat = JSON.parse(localStorage.getItem('fk_lab_pem_alat_v11')) || defaultPemakaianAlat;
-        let dataMaintenance = JSON.parse(localStorage.getItem('fk_lab_maint_v11')) || defaultMaintenance;
-        let dataKontak = JSON.parse(localStorage.getItem('fk_lab_kontak_v11')) || defaultKontak;
+        let dataRuangan = JSON.parse(localStorage.getItem('fk_lab_ruangan_v12')) || defaultRuangan;
+        let dataAlat = JSON.parse(localStorage.getItem('fk_lab_alat_v12')) || defaultAlat;
+        let dataPemakaianRuangan = JSON.parse(localStorage.getItem('fk_lab_pem_ruangan_v12')) || defaultPemakaianRuangan;
+        let dataPemakaianAlat = JSON.parse(localStorage.getItem('fk_lab_pem_alat_v12')) || defaultPemakaianAlat;
+        let dataMaintenance = JSON.parse(localStorage.getItem('fk_lab_maint_v12')) || defaultMaintenance;
+        let dataKontak = JSON.parse(localStorage.getItem('fk_lab_kontak_v12')) || defaultKontak;
 
         function saveData() {
-            localStorage.setItem('fk_lab_ruangan_v11', JSON.stringify(dataRuangan));
-            localStorage.setItem('fk_lab_alat_v11', JSON.stringify(dataAlat));
-            localStorage.setItem('fk_lab_pem_ruangan_v11', JSON.stringify(dataPemakaianRuangan));
-            localStorage.setItem('fk_lab_pem_alat_v11', JSON.stringify(dataPemakaianAlat));
-            localStorage.setItem('fk_lab_maint_v11', JSON.stringify(dataMaintenance));
-            localStorage.setItem('fk_lab_kontak_v11', JSON.stringify(dataKontak));
+            localStorage.setItem('fk_lab_ruangan_v12', JSON.stringify(dataRuangan));
+            localStorage.setItem('fk_lab_alat_v12', JSON.stringify(dataAlat));
+            localStorage.setItem('fk_lab_pem_ruangan_v12', JSON.stringify(dataPemakaianRuangan));
+            localStorage.setItem('fk_lab_pem_alat_v12', JSON.stringify(dataPemakaianAlat));
+            localStorage.setItem('fk_lab_maint_v12', JSON.stringify(dataMaintenance));
+            localStorage.setItem('fk_lab_kontak_v12', JSON.stringify(dataKontak));
         }
 
         function switchTab(tabId) {
@@ -818,290 +819,9 @@
         function renderKontak() {
             const grid = document.getElementById('gridKontak');
             grid.innerHTML = '';
-            dataKontak.forEach(c => {
+            dataKontak.forEach((c, idx) => {
                 let fotoHTML = (c.foto && c.foto.trim() !== '')
-                    ? `<img src="${c.foto}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'90\' height=\'90\' viewBox=\'0 0 90 90\'><circle cx=\'45\' cy=\'45\' r=\'45\' fill=\'%23002B49\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'36\'>👨‍⚕️</text></svg>';">`
+                    ? `<img src="${c.foto}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'profile-photo\' style=\'display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;\'>👨‍⚕️</div>';">`
                     : `<div class="profile-photo" style="display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;">👨‍⚕️</div>`;
 
-                let emailHTML = (c.email && c.email.trim() !== '' && c.email !== '-') ? `<p style="font-size:12px; color:#64748b; margin-bottom:10px;">✉️ ${c.email}</p>` : '';
-                let waHTML = (c.wa && c.wa.trim() !== '' && c.wa !== '-') ? `
-                    <a href="https://wa.me/${c.wa}" target="_blank" style="display:block; background:#059669; color:white; text-decoration:none; padding:8px; border-radius:6px; font-size:12px; font-weight:bold; margin-top:10px;">💬 Chat WhatsApp</a>
-                ` : '';
-
-                grid.innerHTML += `
-                    <div class="card" style="text-align:center; padding:20px;">
-                        ${fotoHTML}
-                        <span class="card-badge">${c.jabatan || 'Pengelola Lab'}</span>
-                        <h3 style="margin-top:5px;">${c.nama || '-'}</h3>
-                        ${emailHTML}
-                        ${waHTML}
-                    </div>
-                `;
-            });
-        }
-
-        function renderAll() {
-            renderRuangan();
-            renderPemakaianRuangan();
-            renderAlat();
-            renderPemakaianAlat();
-            renderMaintenance();
-            renderKontak();
-        }
-
-        function handlePengajuanRuangan(e) {
-            e.preventDefault();
-            const rId = parseInt(document.getElementById('p_ruangan').value);
-            const rObj = dataRuangan.find(x => x.id === rId);
-            const tgl = document.getElementById('p_tanggal').value;
-            const jamMulai = document.getElementById('p_jam_mulai').value;
-            const jamSelesai = document.getElementById('p_jam_selesai').value;
-
-            const isBentrok = dataPemakaianRuangan.some(p => 
-                p.ruanganId === rId && 
-                p.tanggal === tgl && 
-                p.status === 'Disetujui' &&
-                ((jamMulai >= p.jamMulai && jamMulai < p.jamSelesai) || (jamSelesai > p.jamMulai && jamSelesai <= p.jamSelesai))
-            );
-
-            if(isBentrok) {
-                alert(`⚠️ BENTROK JADWAL!\n\nRuangan "${rObj.nama}" sudah DISETUJUI dipake pada tanggal ${tgl} jam ${jamMulai} - ${jamSelesai}. Silakan pilih jam atau tanggal lain.`);
-                return;
-            }
-
-            dataPemakaianRuangan.unshift({
-                id: Date.now(),
-                pemohon: document.getElementById('p_nama').value,
-                nim: document.getElementById('p_nim').value,
-                instansi: document.getElementById('p_instansi').value,
-                ruanganId: rId,
-                ruanganNama: rObj.nama,
-                jumlahPemakai: parseInt(document.getElementById('p_jumlah_pemakai').value) || 1,
-                tanggal: tgl,
-                jamMulai: jamMulai,
-                jamSelesai: jamSelesai,
-                status: 'Menunggu'
-            });
-            saveData();
-            renderPemakaianRuangan();
-            alert('Pengajuan pemakaian ruangan berhasil dikirim!');
-        }
-
-        function handlePengajuanAlat(e) {
-            e.preventDefault();
-            const aId = parseInt(document.getElementById('pa_alat').value);
-            const aObj = dataAlat.find(x => x.id === aId);
-            const tgl = document.getElementById('pa_tanggal').value;
-            const jamMulai = document.getElementById('pa_jam_mulai').value;
-            const jamSelesai = document.getElementById('pa_jam_selesai').value;
-
-            const isBentrok = dataPemakaianAlat.some(p => 
-                p.alatId === aId && 
-                p.tanggal === tgl && 
-                p.status === 'Disetujui' &&
-                ((jamMulai >= p.jamMulai && jamMulai < p.jamSelesai) || (jamSelesai > p.jamMulai && jamSelesai <= p.jamSelesai))
-            );
-
-            if(isBentrok) {
-                alert(`⚠️ BENTROK JADWAL!\n\nPeralatan "${aObj.nama}" sudah DISETUJUI dipake pada tanggal ${tgl} jam ${jamMulai} - ${jamSelesai}. Silakan pilih waktu lain.`);
-                return;
-            }
-
-            dataPemakaianAlat.unshift({
-                id: Date.now(),
-                pemohon: document.getElementById('pa_nama').value,
-                nim: document.getElementById('pa_nim').value,
-                instansi: document.getElementById('pa_instansi').value,
-                alatId: aId,
-                alatNama: aObj.nama,
-                jumlah: parseInt(document.getElementById('pa_jumlah').value) || 1,
-                jumlahPemakai: parseInt(document.getElementById('pa_jumlah_pemakai').value) || 1,
-                tanggal: tgl,
-                jamMulai: jamMulai,
-                jamSelesai: jamSelesai,
-                status: 'Menunggu'
-            });
-            saveData();
-            renderPemakaianAlat();
-            alert('Pengajuan peminjaman alat berhasil dikirim!');
-        }
-
-        function setStatusRuangan(id, st) {
-            const item = dataPemakaianRuangan.find(x => x.id === id);
-            if(item) { item.status = st; saveData(); renderPemakaianRuangan(); }
-        }
-
-        function setStatusAlat(id, st) {
-            const item = dataPemakaianAlat.find(x => x.id === id);
-            if(item) { item.status = st; saveData(); renderPemakaianAlat(); }
-        }
-
-        function openModalSOP(id) {
-            const a = dataAlat.find(x => x.id === id);
-            if(a) {
-                document.getElementById('sopTitle').innerText = a.nama;
-                document.getElementById('sopContent').innerText = a.sop || 'Belum ada SOP.';
-                openModal('modalSOP');
-            }
-        }
-
-        function openModalRuangan() {
-            document.getElementById('modalRuanganTitle').innerText = 'Tambah Ruangan';
-            document.getElementById('mr_id').value = '';
-            document.getElementById('mr_nama').value = '';
-            document.getElementById('mr_kapasitas').value = '';
-            document.getElementById('mr_fasilitas').value = '';
-            document.getElementById('mr_foto').value = '';
-            openModal('modalRuangan');
-        }
-
-        function editRuangan(id) {
-            const r = dataRuangan.find(x => x.id === id);
-            if(r) {
-                document.getElementById('modalRuanganTitle').innerText = 'Edit Ruangan';
-                document.getElementById('mr_id').value = r.id;
-                document.getElementById('mr_nama').value = r.nama;
-                document.getElementById('mr_kapasitas').value = r.kapasitas;
-                document.getElementById('mr_fasilitas').value = r.fasilitas.join(', ');
-                document.getElementById('mr_foto').value = r.foto || '';
-                document.getElementById('mr_status').value = r.status;
-                openModal('modalRuangan');
-            }
-        }
-
-        function saveRuangan(e) {
-            e.preventDefault();
-            const id = document.getElementById('mr_id').value;
-            const item = {
-                id: id ? parseInt(id) : Date.now(),
-                nama: document.getElementById('mr_nama').value,
-                kapasitas: document.getElementById('mr_kapasitas').value,
-                fasilitas: document.getElementById('mr_fasilitas').value.split(',').map(s => s.trim()),
-                foto: document.getElementById('mr_foto').value,
-                status: document.getElementById('mr_status').value
-            };
-
-            if(id) {
-                const idx = dataRuangan.findIndex(x => x.id === parseInt(id));
-                dataRuangan[idx] = item;
-            } else {
-                dataRuangan.push(item);
-            }
-            saveData(); renderRuangan(); closeModal('modalRuangan');
-        }
-
-        function deleteRuangan(id) {
-            if(confirm('Hapus ruangan ini?')) { dataRuangan = dataRuangan.filter(x => x.id !== id); saveData(); renderRuangan(); }
-        }
-
-        function openModalAlat() {
-            document.getElementById('modalAlatTitle').innerText = 'Tambah Alat';
-            document.getElementById('ma_id').value = '';
-            document.getElementById('ma_nama').value = '';
-            document.getElementById('ma_jumlah').value = 1;
-            document.getElementById('ma_foto').value = '';
-            document.getElementById('ma_sop').value = '';
-            openModal('modalAlat');
-        }
-
-        function editAlat(id) {
-            const a = dataAlat.find(x => x.id === id);
-            if(a) {
-                document.getElementById('modalAlatTitle').innerText = 'Edit Alat';
-                document.getElementById('ma_id').value = a.id;
-                document.getElementById('ma_nama').value = a.nama;
-                document.getElementById('ma_kategori').value = a.kategori;
-                document.getElementById('ma_jumlah').value = a.jumlah;
-                document.getElementById('ma_foto').value = a.foto || '';
-                document.getElementById('ma_status').value = a.status;
-                document.getElementById('ma_sop').value = a.sop || '';
-                openModal('modalAlat');
-            }
-        }
-
-        function saveAlat(e) {
-            e.preventDefault();
-            const id = document.getElementById('ma_id').value;
-            const item = {
-                id: id ? parseInt(id) : Date.now(),
-                nama: document.getElementById('ma_nama').value,
-                kategori: document.getElementById('ma_kategori').value,
-                jumlah: parseInt(document.getElementById('ma_jumlah').value) || 1,
-                foto: document.getElementById('ma_foto').value,
-                status: document.getElementById('ma_status').value,
-                sop: document.getElementById('ma_sop').value
-            };
-
-            if(id) {
-                const idx = dataAlat.findIndex(x => x.id === parseInt(id));
-                dataAlat[idx] = item;
-            } else {
-                dataAlat.push(item);
-            }
-            saveData(); renderAlat(); closeModal('modalAlat');
-        }
-
-        function deleteAlat(id) {
-            if(confirm('Hapus alat ini?')) { dataAlat = dataAlat.filter(x => x.id !== id); saveData(); renderAlat(); }
-        }
-
-        function openModalMaintenance() {
-            document.getElementById('mm_tanggal').valueAsDate = new Date();
-            openModal('modalMaintenance');
-        }
-
-        function saveMaintenance(e) {
-            e.preventDefault();
-            dataMaintenance.unshift({
-                id: Date.now(),
-                tanggal: document.getElementById('mm_tanggal').value,
-                alatNama: document.getElementById('mm_alat').value,
-                jenis: document.getElementById('mm_jenis').value,
-                teknisi: document.getElementById('mm_teknisi').value,
-                kondisi: document.getElementById('mm_kondisi').value,
-                catatan: document.getElementById('mm_catatan').value
-            });
-            saveData(); renderMaintenance(); closeModal('modalMaintenance');
-        }
-
-        function openModalKontak() {
-            const container = document.getElementById('containerFormKontak');
-            container.innerHTML = '';
-            dataKontak.forEach((c, i) => {
-                container.innerHTML += `
-                    <div style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
-                        <small><strong>Pengelola ${i+1}</strong></small>
-                        <input type="text" id="edit_jabatan_${i}" value="${c.jabatan||''}" placeholder="Jabatan" class="form-control" style="margin-top:4px;">
-                        <input type="text" id="edit_nama_${i}" value="${c.nama||''}" placeholder="Nama" class="form-control" style="margin-top:4px;">
-                        <input type="text" id="edit_wa_${i}" value="${c.wa||''}" placeholder="WhatsApp (628...)" class="form-control" style="margin-top:4px;">
-                        <input type="text" id="edit_email_${i}" value="${c.email||''}" placeholder="Email (Opsional)" class="form-control" style="margin-top:4px;">
-                        <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto Profil (Opsional)" class="form-control" style="margin-top:4px;">
-                    </div>
-                `;
-            });
-            openModal('modalKontak');
-        }
-
-        function saveKontak(e) {
-            e.preventDefault();
-            dataKontak.forEach((c, i) => {
-                c.jabatan = document.getElementById(`edit_jabatan_${i}`).value;
-                c.nama = document.getElementById(`edit_nama_${i}`).value;
-                c.wa = document.getElementById(`edit_wa_${i}`).value;
-                c.email = document.getElementById(`edit_email_${i}`).value;
-                c.foto = document.getElementById(`edit_foto_${i}`).value;
-            });
-            saveData(); renderKontak(); closeModal('modalKontak');
-        }
-
-        function cetakLaporan(judul) {
-            if(!isAdmin) { alert('Hanya Admin yang dapat melakukan cetak PDF.'); return; }
-            window.print();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
-        });
-    </script>
-</body>
-</html>
+                let emailHTML = (c.email && c.email.trim()
