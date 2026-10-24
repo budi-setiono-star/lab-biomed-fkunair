@@ -243,6 +243,7 @@
                                     <th>Ruangan</th>
                                     <th>Jml Pemakai</th>
                                     <th>Jadwal</th>
+                                    <th>Keperluan</th>
                                     <th>Status</th>
                                     <th class="admin-only">Aksi Admin</th>
                                 </tr>
@@ -337,6 +338,7 @@
                                     <th>Nama Alat</th>
                                     <th>Unit & Pemakai</th>
                                     <th>Jadwal & Jam</th>
+                                    <th>Keperluan</th>
                                     <th>Status</th>
                                     <th class="admin-only">Aksi Admin</th>
                                 </tr>
@@ -877,6 +879,7 @@
                         <td>${p.ruanganNama || '-'}</td>
                         <td><strong>${p.jumlahPemakai || 1} Orang</strong></td>
                         <td>${p.tanggal || '-'}<br><small>${p.jamMulai || ''} - ${p.jamSelesai || ''} WIB</small></td>
+                        <td><small>${p.keperluan || '-'}</small></td>
                         <td><strong>${p.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             <div class="action-btn-group">
@@ -946,6 +949,7 @@
                         <td>${pa.alatNama || '-'}</td>
                         <td>${pa.jumlah || 1} Unit<br><small>(${pa.jumlahPemakai || 1} Pemakai)</small></td>
                         <td>${jadwalText}</td>
+                        <td><small>${pa.tujuan || '-'}</small></td>
                         <td><strong>${pa.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             <div class="action-btn-group">
@@ -1061,6 +1065,7 @@
                 tanggal: tgl,
                 jamMulai: jamMulai,
                 jamSelesai: jamSelesai,
+                keperluan: document.getElementById('p_keperluan').value,
                 status: 'Menunggu'
             };
 
@@ -1107,6 +1112,7 @@
                 tanggal: tgl,
                 jamMulai: jamMulai,
                 jamSelesai: jamSelesai,
+                tujuan: document.getElementById('pa_tujuan').value,
                 status: 'Menunggu'
             };
 
