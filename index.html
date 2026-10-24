@@ -796,7 +796,7 @@
 
             for(let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const eventsRuangan = dataPemakaianRuangan.filter(p => p.tanggal === dateStr);
+                const eventsRuangan = dataPemakaianRuangan.filter(p => p.tanggal === dateStr && p.status !== 'Ditolak');
                 let eventsHTML = '';
 
                 eventsRuangan.forEach(e => {
@@ -1001,6 +1001,11 @@
             renderKontak();
         }
 
+        // FUNGSI CEK TABRAKAN JADWAL
+        function isTimeOverlap(startA, endA, startB, endB) {
+            return startA < endB && endA > startB;
+        }
+
         function handlePengajuanRuangan(e) {
             e.preventDefault();
             const rId = document.getElementById('p_ruangan').value;
@@ -1008,6 +1013,24 @@
             const tgl = document.getElementById('p_tanggal').value;
             const jamMulai = document.getElementById('p_jam_mulai').value;
             const jamSelesai = document.getElementById('p_jam_selesai').value;
+
+            if (jamMulai >= jamSelesai) {
+                alert('⚠️ Jam Selesai harus lebih akhir dari Jam Mulai!');
+                return;
+            }
+
+            // CEK JADWAL BENTROK
+            const bentrok = dataPemakaianRuangan.find(p => {
+                if (p.ruanganId === rId && p.tanggal === tgl && p.status !== 'Ditolak') {
+                    return isTimeOverlap(jamMulai, jamSelesai, p.jamMulai, p.jamSelesai);
+                }
+                return false;
+            });
+
+            if (bentrok) {
+                alert(`❌ JADWAL BENTROK!\n\nRuangan ${rObj ? rObj.nama : ''} sudah diajukan/disetujui pada tanggal ${tgl} jam ${bentrok.jamMulai} - ${bentrok.jamSelesai} WIB oleh ${bentrok.pemohon}.\n\nSilahkan pilih jam atau tanggal lain.`);
+                return;
+            }
 
             const newId = 'RB_' + Date.now();
             const newObj = {
@@ -1036,6 +1059,24 @@
             const tgl = document.getElementById('pa_tanggal').value;
             const jamMulai = document.getElementById('pa_jam_mulai').value;
             const jamSelesai = document.getElementById('pa_jam_selesai').value;
+
+            if (jamMulai >= jamSelesai) {
+                alert('⚠️ Jam Selesai harus lebih akhir dari Jam Mulai!');
+                return;
+            }
+
+            // CEK JADWAL BENTROK
+            const bentrok = dataPemakaianAlat.find(pa => {
+                if (pa.alatId === aId && pa.tanggal === tgl && pa.status !== 'Ditolak') {
+                    return isTimeOverlap(jamMulai, jamSelesai, pa.jamMulai, pa.jamSelesai);
+                }
+                return false;
+            });
+
+            if (bentrok) {
+                alert(`❌ JADWAL BENTROK!\n\nAlat ${aObj ? aObj.nama : ''} sudah dipinjam pada tanggal ${tgl} jam ${bentrok.jamMulai} - ${bentrok.jamSelesai} WIB oleh ${bentrok.pemohon}.\n\nSilahkan pilih jam atau tanggal lain.`);
+                return;
+            }
 
             const newId = 'UL_' + Date.now();
             const newObj = {
