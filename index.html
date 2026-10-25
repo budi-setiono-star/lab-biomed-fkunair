@@ -1270,4 +1270,250 @@
                 status: 'Menunggu'
             };
 
-            db.ref
+            db.ref('usageLogs/' + newId).set(newObj, (err) => {
+                if(!err) alert('Pengajuan peminjaman alat berhasil dikirim!');
+            });
+        }
+
+        function setStatusRuangan(id, st) {
+            db.ref('roomBookings/' + id + '/status').set(st);
+        }
+
+        function deletePemakaianRuangan(id) {
+            if(confirm('Hapus riwayat/pengajuan pemakaian ruangan ini?')) {
+                db.ref('roomBookings/' + id).remove();
+            }
+        }
+
+        function setStatusAlat(id, st) {
+            db.ref('usageLogs/' + id + '/status').set(st);
+        }
+
+        function deletePemakaianAlat(id) {
+            if(confirm('Hapus riwayat/pengajuan peminjaman alat ini?')) {
+                db.ref('usageLogs/' + id).remove();
+            }
+        }
+
+        function openModalSOP(id) {
+            const a = dataAlat[id];
+            if(a) {
+                document.getElementById('sopTitle').innerText = a.nama || 'SOP Alat';
+                document.getElementById('sopContent').innerText = a.sop || 'Belum ada SOP.';
+                openModal('modalSOP');
+            }
+        }
+
+        function openModalRuangan() {
+            document.getElementById('modalRuanganTitle').innerText = 'Tambah Ruangan';
+            document.getElementById('mr_id').value = '';
+            document.getElementById('mr_nama').value = '';
+            document.getElementById('mr_kapasitas').value = '';
+            document.getElementById('mr_fasilitas').value = '';
+            document.getElementById('mr_file').value = '';
+            document.getElementById('mr_foto').value = '';
+            document.getElementById('mr_preview').style.display = 'none';
+            openModal('modalRuangan');
+        }
+
+        function editRuangan(id) {
+            const r = dataRuangan[id];
+            if(r) {
+                document.getElementById('modalRuanganTitle').innerText = 'Edit Ruangan';
+                document.getElementById('mr_id').value = r.id;
+                document.getElementById('mr_nama').value = r.nama || '';
+                document.getElementById('mr_kapasitas').value = r.kapasitas || 0;
+                document.getElementById('mr_fasilitas').value = Array.isArray(r.fasilitas) ? r.fasilitas.join(', ') : (r.fasilitas || '');
+                document.getElementById('mr_file').value = '';
+                document.getElementById('mr_foto').value = r.foto || '';
+                document.getElementById('mr_status').value = r.status || 'Tersedia';
+                updatePreviewFromInput('mr_foto', 'mr_preview');
+                openModal('modalRuangan');
+            }
+        }
+
+        function saveRuangan(e) {
+            e.preventDefault();
+            const id = document.getElementById('mr_id').value || ('R_' + Date.now());
+            const item = {
+                id: id,
+                nama: document.getElementById('mr_nama').value,
+                kapasitas: parseInt(document.getElementById('mr_kapasitas').value) || 0,
+                fasilitas: document.getElementById('mr_fasilitas').value.split(',').map(s => s.trim()),
+                foto: document.getElementById('mr_foto').value,
+                status: document.getElementById('mr_status').value
+            };
+
+            db.ref('rooms/' + id).set(item, (err) => {
+                if(!err) closeModal('modalRuangan');
+            });
+        }
+
+        function deleteRuangan(id) {
+            if(confirm('Hapus ruangan ini?')) { 
+                db.ref('rooms/' + id).remove();
+            }
+        }
+
+        function openModalAlat() {
+            document.getElementById('modalAlatTitle').innerText = 'Tambah Alat';
+            document.getElementById('ma_id').value = '';
+            document.getElementById('ma_nama').value = '';
+            document.getElementById('ma_jumlah').value = 1;
+            document.getElementById('ma_file').value = '';
+            document.getElementById('ma_foto').value = '';
+            document.getElementById('ma_sop').value = '';
+            document.getElementById('ma_preview').style.display = 'none';
+            openModal('modalAlat');
+        }
+
+        function editAlat(id) {
+            const a = dataAlat[id];
+            if(a) {
+                document.getElementById('modalAlatTitle').innerText = 'Edit Alat';
+                document.getElementById('ma_id').value = a.id;
+                document.getElementById('ma_nama').value = a.nama || '';
+                document.getElementById('ma_kategori').value = a.kategori || 'General Lab';
+                document.getElementById('ma_jumlah').value = a.jumlah || 1;
+                document.getElementById('ma_file').value = '';
+                document.getElementById('ma_foto').value = a.foto || '';
+                document.getElementById('ma_status').value = a.status || 'Siap Pakai';
+                document.getElementById('ma_sop').value = a.sop || '';
+                updatePreviewFromInput('ma_foto', 'ma_preview');
+                openModal('modalAlat');
+            }
+        }
+
+        function saveAlat(e) {
+            e.preventDefault();
+            const id = document.getElementById('ma_id').value || ('A_' + Date.now());
+            const item = {
+                id: id,
+                nama: document.getElementById('ma_nama').value,
+                kategori: document.getElementById('ma_kategori').value,
+                jumlah: parseInt(document.getElementById('ma_jumlah').value) || 1,
+                foto: document.getElementById('ma_foto').value,
+                status: document.getElementById('ma_status').value,
+                sop: document.getElementById('ma_sop').value
+            };
+
+            db.ref('equipments/' + id).set(item, (err) => {
+                if(!err) closeModal('modalAlat');
+            });
+        }
+
+        function deleteAlat(id) {
+            if(confirm('Hapus alat ini?')) { 
+                db.ref('equipments/' + id).remove();
+            }
+        }
+
+        function openModalMaintenance() {
+            document.getElementById('modalMaintTitle').innerText = 'Input Maintenance Log';
+            document.getElementById('mm_id').value = '';
+            document.getElementById('mm_tanggal').valueAsDate = new Date();
+            document.getElementById('mm_jenis').value = '';
+            document.getElementById('mm_teknisi').value = '';
+            document.getElementById('mm_kondisi').value = 'Normal / Baik';
+            document.getElementById('mm_catatan').value = '';
+            openModal('modalMaintenance');
+        }
+
+        function editMaintenance(id) {
+            const m = dataMaintenance.find(item => item.id === id);
+            if(m) {
+                document.getElementById('modalMaintTitle').innerText = 'Edit Maintenance Log';
+                document.getElementById('mm_id').value = m.id;
+                document.getElementById('mm_tanggal').value = m.tanggal || '';
+                document.getElementById('mm_alat').value = m.alatNama || '';
+                document.getElementById('mm_jenis').value = m.jenis || '';
+                document.getElementById('mm_teknisi').value = m.teknisi || '';
+                document.getElementById('mm_kondisi').value = m.kondisi || 'Normal / Baik';
+                document.getElementById('mm_catatan').value = m.catatan || '';
+                openModal('modalMaintenance');
+            }
+        }
+
+        function saveMaintenance(e) {
+            e.preventDefault();
+            const id = document.getElementById('mm_id').value || ('ML_' + Date.now());
+            const newObj = {
+                id: id,
+                tanggal: document.getElementById('mm_tanggal').value,
+                alatNama: document.getElementById('mm_alat').value,
+                jenis: document.getElementById('mm_jenis').value,
+                teknisi: document.getElementById('mm_teknisi').value,
+                kondisi: document.getElementById('mm_kondisi').value,
+                catatan: document.getElementById('mm_catatan').value
+            };
+            db.ref('maintenanceLogs/' + id).set(newObj, (err) => {
+                if(!err) closeModal('modalMaintenance');
+            });
+        }
+
+        function finishMaintenance(id) {
+            if(confirm('Tandai pekerjaan maintenance ini sudah selesai?')) {
+                db.ref('maintenanceLogs/' + id + '/kondisi').set('Selesai (Maintenance)');
+            }
+        }
+
+        function deleteMaintenance(id) {
+            if(confirm('Hapus log maintenance ini?')) {
+                db.ref('maintenanceLogs/' + id).remove();
+            }
+        }
+
+        function openModalKontak() {
+            const container = document.getElementById('containerFormKontak');
+            container.innerHTML = '';
+            dataKontak.forEach((c, i) => {
+                let previewSrc = convertGDriveLink(c.foto);
+                let previewDisplay = previewSrc ? 'block' : 'none';
+
+                container.innerHTML += `
+                    <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1;">
+                        <span style="font-size:12px; font-weight:bold; color:#002B49;">👤 Pengelola #${i+1}</span>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                            <input type="text" id="edit_jabatan_${i}" value="${c.jabatan||''}" placeholder="Jabatan" class="form-control">
+                            <input type="text" id="edit_nama_${i}" value="${c.nama||''}" placeholder="Nama Lengkap" class="form-control">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                            <input type="text" id="edit_wa_${i}" value="${c.wa||''}" placeholder="No WA (628...)" class="form-control">
+                            <input type="text" id="edit_email_${i}" value="${c.email||''}" placeholder="Email" class="form-control">
+                        </div>
+                        <div class="upload-section" style="margin-top:8px;">
+                            <input type="file" accept="image/*" onchange="handleFileSelectCompressed(event, 'edit_foto_${i}', 'edit_preview_${i}')" class="form-control" style="margin-bottom:6px;">
+                            <input type="text" id="edit_foto_${i}" value="${c.foto||''}" placeholder="URL Foto / Link Google Drive" oninput="updatePreviewFromInput('edit_foto_${i}', 'edit_preview_${i}')" class="form-control">
+                            <img id="edit_preview_${i}" src="${previewSrc}" class="preview-img-box" style="display:${previewDisplay}; margin-top:6px;" alt="Preview Foto">
+                        </div>
+                    </div>
+                `;
+            });
+            openModal('modalKontak');
+        }
+
+        function saveKontak(e) {
+            e.preventDefault();
+            dataKontak.forEach((c, i) => {
+                c.jabatan = document.getElementById(`edit_jabatan_${i}`).value.trim();
+                c.nama = document.getElementById(`edit_nama_${i}`).value.trim();
+                c.wa = document.getElementById(`edit_wa_${i}`).value.trim();
+                c.email = document.getElementById(`edit_email_${i}`).value.trim();
+                c.foto = document.getElementById(`edit_foto_${i}`).value.trim();
+            });
+            db.ref('kontak').set(dataKontak);
+            closeModal('modalKontak');
+            alert('Informasi kontak & foto pengelola berhasil diperbarui!');
+        }
+
+        function cetakLaporan(judul) {
+            if(!isAdmin) { alert('Hanya Admin yang dapat melakukan cetak PDF.'); return; }
+            window.print();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initRealtimeSync();
+        });
+    </script>
+</body>
+</html>
