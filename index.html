@@ -229,8 +229,20 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Keperluan / Judul Penelitian</label>
-                            <textarea id="p_keperluan" rows="2" required class="form-control"></textarea>
+                            <label>Pilihan Kegiatan</label>
+                            <select id="p_kegiatan" required class="form-control">
+                                <option value="Praktikum">Praktikum</option>
+                                <option value="Penelitian">Penelitian</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Judul / Keperluan</label>
+                            <textarea id="p_keperluan" rows="2" required class="form-control" placeholder="Judul Penelitian / Judul Praktikum / Kebutuhan Acara"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Dosen / Penanggung Jawab</label>
+                            <input type="text" id="p_dosen" required class="form-control" placeholder="Nama Dosen Pembimbing / Penanggung Jawab">
                         </div>
                         <button type="submit" class="btn-submit">Ajukan Pemakaian Ruangan</button>
                     </form>
@@ -264,7 +276,7 @@
                                     <th>Ruangan</th>
                                     <th>Jml Pemakai</th>
                                     <th>Jadwal</th>
-                                    <th>Keperluan</th>
+                                    <th>Keperluan & Dosen PJ</th>
                                     <th>Status</th>
                                     <th class="admin-only">Aksi Admin</th>
                                 </tr>
@@ -339,8 +351,20 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Keperluan / Tujuan</label>
-                            <textarea id="pa_tujuan" rows="2" required class="form-control"></textarea>
+                            <label>Pilihan Kegiatan</label>
+                            <select id="pa_kegiatan" required class="form-control">
+                                <option value="Praktikum">Praktikum</option>
+                                <option value="Penelitian">Penelitian</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Judul / Keperluan</label>
+                            <textarea id="pa_tujuan" rows="2" required class="form-control" placeholder="Judul Penelitian / Judul Praktikum / Kebutuhan Kegiatan"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Dosen / Penanggung Jawab</label>
+                            <input type="text" id="pa_dosen" required class="form-control" placeholder="Nama Dosen Pembimbing / Penanggung Jawab">
                         </div>
                         <button type="submit" class="btn-submit">Ajukan Peminjaman Alat</button>
                     </form>
@@ -374,7 +398,7 @@
                                     <th>Nama Alat</th>
                                     <th>Unit & Pemakai</th>
                                     <th>Jadwal & Jam</th>
-                                    <th>Keperluan</th>
+                                    <th>Keperluan & Dosen PJ</th>
                                     <th>Status</th>
                                     <th class="admin-only">Aksi Admin</th>
                                 </tr>
@@ -967,13 +991,16 @@
             }
 
             filteredList.forEach(p => {
+                let kegText = p.kegiatan ? `<strong>[${p.kegiatan}]</strong> ` : '';
+                let dosenText = p.dosen ? `<br><small style="color:#0f172a;">👴 PJ: ${p.dosen}</small>` : '';
+
                 tb.innerHTML += `
                     <tr>
                         <td><strong>${p.pemohon || '-'}</strong><br><small>${p.nim || '-'}</small><br><small style="color:#2563eb;">${p.instansi || '-'}</small></td>
                         <td>${p.ruanganNama || '-'}</td>
                         <td><strong>${p.jumlahPemakai || 1} Orang</strong></td>
                         <td>${p.tanggal || '-'}<br><small>${p.jamMulai || ''} - ${p.jamSelesai || ''} WIB</small></td>
-                        <td><small>${p.keperluan || '-'}</small></td>
+                        <td><small>${kegText}${p.keperluan || '-'}</small>${dosenText}</td>
                         <td><strong>${p.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             <div class="action-btn-group">
@@ -1071,13 +1098,16 @@
 
             filteredList.forEach(pa => {
                 let jadwalText = pa.tanggal ? `${pa.tanggal}<br><small>${pa.jamMulai || ''} - ${pa.jamSelesai || ''} WIB</small>` : '-';
+                let kegText = pa.kegiatan ? `<strong>[${pa.kegiatan}]</strong> ` : '';
+                let dosenText = pa.dosen ? `<br><small style="color:#0f172a;">👴 PJ: ${pa.dosen}</small>` : '';
+
                 tb.innerHTML += `
                     <tr>
                         <td><strong>${pa.pemohon || '-'}</strong><br><small>${pa.nim || '-'}</small><br><small style="color:#2563eb;">${pa.instansi || '-'}</small></td>
                         <td>${pa.alatNama || '-'}</td>
                         <td>${pa.jumlah || 1} Unit<br><small>(${pa.jumlahPemakai || 1} Pemakai)</small></td>
                         <td>${jadwalText}</td>
-                        <td><small>${pa.tujuan || '-'}</small></td>
+                        <td><small>${kegText}${pa.tujuan || '-'}</small>${dosenText}</td>
                         <td><strong>${pa.status || 'Menunggu'}</strong></td>
                         <td class="admin-only" style="display:${isAdmin ? 'table-cell' : 'none'};">
                             <div class="action-btn-group">
@@ -1219,7 +1249,9 @@
                 tanggal: tgl,
                 jamMulai: jamMulai,
                 jamSelesai: jamSelesai,
+                kegiatan: document.getElementById('p_kegiatan').value,
                 keperluan: document.getElementById('p_keperluan').value,
+                dosen: document.getElementById('p_dosen').value,
                 status: 'Menunggu'
             };
 
@@ -1266,7 +1298,9 @@
                 tanggal: tgl,
                 jamMulai: jamMulai,
                 jamSelesai: jamSelesai,
+                kegiatan: document.getElementById('pa_kegiatan').value,
                 tujuan: document.getElementById('pa_tujuan').value,
+                dosen: document.getElementById('pa_dosen').value,
                 status: 'Menunggu'
             };
 
