@@ -135,18 +135,27 @@
 
         /* KUSTOMISASI MODUL CETAK / PDF PRINT (HANYA MENCETAK REKAPITULASI) */
         @media print {
-            body { background: white; color: black; }
-            header, nav, .admin-controls, .btn-action, .btn-print, .no-print, .calendar-container, .filter-bar, form { display: none !important; }
-            main { max-width: 100%; margin: 0; padding: 0; }
-            .card { border: none; box-shadow: none; }
-            .table-responsive { border: none; overflow: visible !important; }
-            table, th, td { border: 1px solid #94a3b8 !important; }
-            .form-container { border: none; box-shadow: none; padding: 0; margin-bottom: 15px; page-break-inside: avoid; }
+            body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+            header, nav, .admin-controls, .btn-action, .btn-print, .no-print, .calendar-container, .filter-bar, form, .stats-grid, .dashboard-banner, .pagination-container { display: none !important; }
+            main { max-width: 100% !important; margin: 0 !important; padding: 10px !important; }
+            .card { border: none !important; box-shadow: none !important; }
+            .table-responsive { border: none !important; overflow: visible !important; width: 100% !important; }
+            table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
+            th, td { border: 1px solid #000 !important; padding: 6px 8px !important; color: #000 !important; }
+            th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+            .form-container { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 15px !important; page-break-inside: avoid; }
             
             /* Sembunyikan kolom tombol Aksi Admin saat dicetak */
-            th:last-child, td:last-child { display: none !important; }
+            th.admin-only, td.admin-only, .admin-only, .admin-only-inline { display: none !important; }
+            
+            /* Tampilkan Kop Surat Saat Cetak */
+            .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; }
+            .print-header h2 { font-size: 16px; text-transform: uppercase; margin-bottom: 2px; }
+            .print-header h3 { font-size: 14px; margin-bottom: 4px; }
+            .print-header p { font-size: 10px; color: #333; }
         }
 
+        .print-header { display: none; }
         .admin-only, .admin-only-inline { display: none; }
         .btn-admin-add { background-color: #002B49; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
         .btn-print { background-color: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -188,7 +197,6 @@
                 <button onclick="switchTab('alat')" id="tab-alat" class="nav-btn">🧪 Katalog Alat</button>
                 <button onclick="switchTab('pemakaian-alat')" id="tab-pemakaian-alat" class="nav-btn">📋 Pemakaian Alat</button>
                 <button onclick="switchTab('maintenance')" id="tab-maintenance" class="nav-btn">🔧 Maintenance Log</button>
-                <button onclick="switchTab('dokumen')" id="tab-dokumen" class="nav-btn">📄 Dokumen SOP</button>
                 <button onclick="switchTab('kontak')" id="tab-kontak" class="nav-btn">📇 Kontak Pengelola</button>
             </div>
         </nav>
@@ -382,7 +390,7 @@
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="font-size:15px;">📋 Daftar Status Pemakaian Ruangan</h3>
-                        <button onclick="cetakLaporan('Daftar Status Pemakaian Ruangan')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
+                        <button onclick="cetakLaporan('Daftar Status Pemakaian Ruangan', 'tabelPemakaianRuangan')" class="btn-print" style="display:inline-block;">🖨️ Cetak PDF</button>
                     </div>
 
                     <!-- FILTER RENTANG WAKTU & NAMA RUANGAN -->
@@ -521,7 +529,7 @@
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="font-size:15px;">📊 Rekapitulasi Pemakaian Alat</h3>
-                        <button onclick="cetakLaporan('Rekapitulasi Pemakaian Alat')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
+                        <button onclick="cetakLaporan('Rekapitulasi Pemakaian Alat', 'tabelPemakaianAlat')" class="btn-print" style="display:inline-block;">🖨️ Cetak PDF</button>
                     </div>
 
                     <!-- FILTER RENTANG WAKTU & NAMA ALAT -->
@@ -581,7 +589,7 @@
                     <p>Log pemeliharaan berkala teknisi laboratorium</p>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button onclick="cetakLaporan('Log Pemeliharaan dan Kalibrasi Alat')" class="admin-only-inline btn-print">🖨️ Cetak PDF</button>
+                    <button onclick="cetakLaporan('Log Pemeliharaan dan Kalibrasi Alat', 'tabelMaintenance')" class="btn-print" style="display:inline-block;">🖨️ Cetak PDF</button>
                     <button onclick="openModalMaintenance()" class="admin-only btn-admin-add">➕ Tambah Log</button>
                 </div>
             </div>
@@ -631,19 +639,6 @@
                 </div>
                 <div class="pagination-controls" id="pagControls_M"></div>
             </div>
-        </section>
-
-        <!-- PANEL DOKUMEN SOP (PDF) -->
-        <section id="sec-dokumen" style="display:none;">
-            <div class="section-title">
-                <div>
-                    <h2>Dokumen Standar Operasional Prosedur (SOP)</h2>
-                    <p>Arsip dan file pedoman penggunaan laboratorium dan keselamatan kerja</p>
-                </div>
-                <button onclick="openModalDokumen()" class="admin-only btn-admin-add">➕ Tambah Dokumen SOP</button>
-            </div>
-
-            <div id="gridDokumen" class="grid"></div>
         </section>
 
         <!-- KONTAK PENGELOLA -->
@@ -818,57 +813,6 @@
         </div>
     </div>
 
-    <div id="modalDokumen" class="modal">
-        <div class="modal-content">
-            <div id="modalDocTitle" class="modal-header">Tambah Dokumen SOP (PDF)</div>
-            <form onsubmit="saveDokumen(event)">
-                <input type="hidden" id="md_id">
-                <div class="form-group">
-                    <label>Judul Dokumen / SOP</label>
-                    <input type="text" id="md_judul" required class="form-control" placeholder="misal: SOP Keselamatan Kerja & B3">
-                </div>
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select id="md_kategori" class="form-control">
-                        <option value="SOP Umum & K3">SOP Umum & K3</option>
-                        <option value="SOP Peralatan Lab">SOP Peralatan Lab</option>
-                        <option value="SOP Ruangan">SOP Ruangan</option>
-                        <option value="Formulir & Administrasi">Formulir & Administrasi</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Upload File PDF / Paste Link Google Drive / Web PDF</label>
-                    <div class="upload-section">
-                        <input type="file" id="md_file" accept="application/pdf" onchange="handlePDFUpload(event)" class="form-control" style="margin-bottom:6px;">
-                        <input type="text" id="md_url" placeholder="https://.../sop.pdf atau link Google Drive" class="form-control">
-                        <small style="font-size:10px; color:#64748b;">*Bisa mengunggah file PDF langsung (Max ~3MB) atau tempel URL PDF/Google Drive.</small>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Deskripsi Singkat</label>
-                    <textarea id="md_deskripsi" rows="2" class="form-control" placeholder="Keterangan dokumen SOP..."></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeModal('modalDokumen')" class="btn-cancel">Batal</button>
-                    <button type="submit" class="btn-submit" style="width:auto; margin-top:0;">Simpan Dokumen</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL POPUP VIEW PDF SECURE -->
-    <div id="modalViewPDF" class="modal">
-        <div class="modal-content" style="max-width:900px; width:95%; height:85vh; display:flex; flex-direction:column; padding:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-                <h3 id="pdfViewerTitle" style="font-size:16px; color:#002B49; font-weight:700;">Pratinjau Dokumen SOP</h3>
-                <button onclick="closeModal('modalViewPDF')" class="btn-cancel" style="padding:4px 10px;">✕ Tutup</button>
-            </div>
-            <div style="flex:1; width:100%; position:relative; background:#f1f5f9; border-radius:8px; overflow:hidden;">
-                <iframe id="pdfFrame" style="width:100%; height:100%; border:none;" src=""></iframe>
-            </div>
-        </div>
-    </div>
-
     <script>
         // INISIALISASI FIREBASE REALTIME DATABASE
         const firebaseConfig = {
@@ -904,8 +848,6 @@
         let filterMaintEnd = '';
         let filterMaintName = '';
 
-        let dataDokumen = [];
-
         let dataRuangan = {};
         let dataAlat = {};
         let dataPemakaianRuangan = [];
@@ -922,33 +864,6 @@
                 return `https://lh3.googleusercontent.com/d/${match[1]}`;
             }
             return url;
-        }
-
-        // FUNGSI KHUSUS KONVERSI LINK GOOGLE DRIVE PDF KE VIEWER
-        function convertGDrivePDFLink(url) {
-            if (!url) return '';
-            url = String(url).trim();
-            if (url.startsWith('data:application/pdf')) return url;
-            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                return `https://drive.google.com/file/d/${match[1]}/preview`;
-            }
-            return url;
-        }
-
-        // FUNGSI DENGAN PROTEKSI TANPA DOWNLOAD/PRINT TOOLBAR
-        function viewPDFProtected(url, title) {
-            const pdfViewerUrl = convertGDrivePDFLink(url);
-            let finalUrl = pdfViewerUrl;
-
-            // Jika link PDF langsung/Base64, tambahkan parameter pembatasan toolbar PDF
-            if (!finalUrl.includes('drive.google.com')) {
-                finalUrl = finalUrl + '#toolbar=0&navpanes=0&scrollbar=0';
-            }
-
-            document.getElementById('pdfViewerTitle').innerText = title || 'Dokumen SOP';
-            document.getElementById('pdfFrame').src = finalUrl;
-            openModal('modalViewPDF');
         }
 
         function handleFileSelectCompressed(event, targetInputId, previewImgId) {
@@ -1123,17 +1038,6 @@
                     dataKontak = Array.isArray(val) ? val : Object.values(val);
                 }
                 renderKontak();
-            });
-
-            db.ref('sopDocuments').on('value', (snapshot) => {
-                const val = snapshot.val();
-                if(!val) {
-                    db.ref('sopDocuments').set({});
-                    dataDokumen = {};
-                } else {
-                    dataDokumen = normalizeToObject(val);
-                }
-                renderDokumen();
             });
         }
 
@@ -1757,7 +1661,7 @@
             dataKontak.forEach((c) => {
                 let directFotoUrl = convertGDriveLink(c.foto);
                 let fotoHTML = (directFotoUrl && directFotoUrl !== '')
-                    ? `<img src="${directFotoUrl}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'profile-photo\' style=\'display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;\'>👨‍⚕️</div>';">`
+                    ? `<img src="${directFotoUrl}" class="profile-photo" alt="${c.nama}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'profile-photo\\' style=\\'display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;\\'>👨‍⚕️</div>';">`
                     : `<div class="profile-photo" style="display:flex; align-items:center; justify-content:center; font-size:36px; background:#002B49; color:white;">👨‍⚕️</div>`;
 
                 let emailHTML = (c.email && c.email.trim() !== '' && c.email !== '-') ? `<p style="font-size:12px; color:#64748b; margin-bottom:10px;">✉️ ${c.email}</p>` : '';
@@ -1774,132 +1678,6 @@
                             ${emailHTML}
                         </div>
                         ${waHTML}
-                    </div>
-                `;
-            });
-        }
-
-        function handlePDFUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 3 * 1024 * 1024) {
-                alert('File PDF terlalu besar (Maksimal ~3MB)! Disarankan menggunakan link Google Drive/URL PDF.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                document.getElementById('md_url').value = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function openModalDokumen() {
-            document.getElementById('modalDocTitle').innerText = 'Tambah Dokumen SOP (PDF)';
-            document.getElementById('md_id').value = '';
-            document.getElementById('md_judul').value = '';
-            document.getElementById('md_file').value = '';
-            document.getElementById('md_url').value = '';
-            document.getElementById('md_deskripsi').value = '';
-            openModal('modalDokumen');
-        }
-
-        function saveDokumen(e) {
-            e.preventDefault();
-            const id = document.getElementById('md_id').value || ('DOC_' + Date.now());
-            const newDoc = {
-                id: id,
-                judul: document.getElementById('md_judul').value,
-                kategori: document.getElementById('md_kategori').value,
-                url: document.getElementById('md_url').value,
-                deskripsi: document.getElementById('md_deskripsi').value
-            };
-            db.ref('sopDocuments/' + id).set(newDoc, (err) => {
-                if(!err) {
-                    closeModal('modalDokumen');
-                    alert('Dokumen SOP berhasil disimpan!');
-                } else {
-                    alert('Gagal menyimpan dokumen: ' + err.message);
-                }
-            });
-        }
-
-        function editDokumen(id) {
-            const docList = Array.isArray(dataDokumen) ? dataDokumen : Object.values(dataDokumen);
-            const doc = docList.find(d => d && String(d.id) === String(id));
-            if(doc) {
-                document.getElementById('modalDocTitle').innerText = 'Edit Dokumen SOP';
-                document.getElementById('md_id').value = doc.id;
-                document.getElementById('md_judul').value = doc.judul || '';
-                document.getElementById('md_kategori').value = doc.kategori || 'SOP Umum & K3';
-                document.getElementById('md_url').value = doc.url || '';
-                document.getElementById('md_deskripsi').value = doc.deskripsi || '';
-                openModal('modalDokumen');
-            } else {
-                alert('Data dokumen tidak ditemukan.');
-            }
-        }
-
-        function deleteDokumen(id) {
-            if(confirm('Apakah Anda yakin ingin menghapus dokumen SOP ini?')) {
-                db.ref('sopDocuments/' + id).remove((err) => {
-                    if(!err) {
-                        alert('Dokumen SOP berhasil dihapus!');
-                    } else {
-                        alert('Gagal menghapus dokumen: ' + err.message);
-                    }
-                });
-            }
-        }
-
-        function printPDFDocument(pdfUrl) {
-            if (!isAdmin) {
-                alert('Hanya Admin yang dapat mencetak file ini!');
-                return;
-            }
-            const printWin = window.open(pdfUrl, '_blank');
-            if (printWin) {
-                printWin.focus();
-                setTimeout(() => { printWin.print(); }, 1000);
-            }
-        }
-
-        function renderDokumen() {
-            const grid = document.getElementById('gridDokumen');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            const docsList = Array.isArray(dataDokumen) 
-                ? dataDokumen 
-                : (dataDokumen ? Object.values(dataDokumen) : []);
-
-            if (!docsList || docsList.length === 0) {
-                grid.innerHTML = '<p style="font-size:13px; color:#64748b;">Belum ada dokumen SOP yang diunggah.</p>';
-                return;
-            }
-
-            docsList.forEach(doc => {
-                if (!doc) return;
-                const docId = doc.id;
-                const pdfViewerUrl = convertGDrivePDFLink(doc.url);
-                grid.innerHTML += `
-                    <div class="card" style="padding:15px;">
-                        <div>
-                            <span class="card-badge" style="background:#f1f5f9; color:#002B49;">📑 ${doc.kategori || 'SOP'}</span>
-                            <h3 style="font-size:15px; margin:8px 0 5px 0;">${doc.judul || 'Dokumen SOP'}</h3>
-                            <p style="font-size:12px; color:#64748b; margin-bottom:12px;">${doc.deskripsi || '-'}</p>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #f1f5f9; padding-top:10px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; gap:5px;">
-                                <button onclick="viewPDFProtected('${doc.url}', '${(doc.judul || 'Dokumen SOP').replace(/'/g, "\\'")}')" class="btn-action" style="background:#eff6ff; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; color:#1d4ed8; border:none; cursor:pointer;">📖 Buka PDF</button>
-                                <button onclick="printPDFDocument('${pdfViewerUrl}')" class="btn-print" style="padding:6px 10px; font-size:11px;">🖨️ Cetak PDF</button>
-                            </div>
-                            <div class="admin-only" style="display:${isAdmin ? 'block' : 'none'}; margin-top:8px;">
-                                <div style="display:flex; justify-content:flex-end; gap:8px;">
-                                    <button onclick="editDokumen('${docId}')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">✏️ Edit</button>
-                                    <button onclick="deleteDokumen('${docId}')" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ Hapus</button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 `;
             });
@@ -2214,9 +1992,82 @@
             alert('Informasi kontak & foto pengelola berhasil diperbarui!');
         }
 
-        function cetakLaporan(judul) {
-            if(!isAdmin) { alert('Hanya Admin yang dapat melakukan cetak PDF.'); return; }
-            window.print();
+        function cetakLaporan(judul, tableBodyId) {
+            try {
+                // Buat jendela cetak mandiri untuk menghindari hambatan iFrame sandbox
+                const printWin = window.open('', '_blank', 'width=900,height=650');
+                if (!printWin) {
+                    // Fallback jika popup diblokir
+                    window.print();
+                    return;
+                }
+
+                let targetTableHTML = '';
+                if (tableBodyId) {
+                    const tbody = document.getElementById(tableBodyId);
+                    if (tbody) {
+                        // Salin isi tabel tanpa kolom Aksi Admin
+                        const rows = Array.from(tbody.querySelectorAll('tr'));
+                        let rowsHTML = '';
+                        rows.forEach((row, idx) => {
+                            const cells = Array.from(row.querySelectorAll('td'));
+                            // Abaikan kolom terakhir jika berisi aksi admin
+                            const validCells = cells.filter((td, cIdx) => !td.classList.contains('admin-only') && cIdx < cells.length - (isAdmin ? 1 : 0));
+                            let cellStr = validCells.map(td => `<td style="padding:8px; border:1px solid #cbd5e1;">${td.innerHTML}</td>`).join('');
+                            rowsHTML += `<tr>${cellStr}</tr>`;
+                        });
+
+                        // Ambil header
+                        const tableElem = tbody.closest('table');
+                        let headerHTML = '';
+                        if (tableElem) {
+                            const ths = Array.from(tableElem.querySelectorAll('thead th'));
+                            const validThs = ths.filter((th, cIdx) => !th.classList.contains('admin-only') && cIdx < ths.length - (isAdmin ? 1 : 0));
+                            headerHTML = validThs.map(th => `<th style="padding:8px; border:1px solid #002B49; background:#002B49; color:white; text-align:left; font-size:11px;">${th.innerText}</th>`).join('');
+                        }
+
+                        targetTableHTML = `
+                            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
+                                <thead><tr>${headerHTML}</tr></thead>
+                                <tbody>${rowsHTML}</tbody>
+                            </table>
+                        `;
+                    }
+                }
+
+                const docContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>${judul}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 15px; color: #1e293b; margin: 0; }
+                            .title-doc { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #0f172a; text-transform: uppercase; }
+                            @media print {
+                                body { padding: 0; margin: 0; }
+                                .no-print { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="title-doc">${judul}</div>
+                        ${targetTableHTML}
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                            }
+                        <\/script>
+                    </body>
+                    </html>
+                `;
+
+                printWin.document.open();
+                printWin.document.write(docContent);
+                printWin.document.close();
+            } catch (err) {
+                console.error(err);
+                window.print();
+            }
         }
 
         function renderAll() {
@@ -2226,7 +2077,6 @@
             renderPemakaianAlat();
             renderMaintenance();
             renderKontak();
-            renderDokumen();
             updateDashboardStats();
         }
 
