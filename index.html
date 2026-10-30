@@ -103,6 +103,16 @@
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: #475569; }
         tr:hover { background-color: #f8fafc; }
 
+        /* PAGINATION STYLES */
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: white; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px; flex-wrap: wrap; gap: 10px; }
+        .pagination-info { font-size: 12px; color: #64748b; font-weight: 500; }
+        .pagination-controls { display: flex; align-items: center; gap: 5px; }
+        .page-btn { background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .page-btn:hover:not(:disabled) { background: #002B49; color: white; border-color: #002B49; }
+        .page-btn.active { background: #002B49; color: white; border-color: #002B49; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .entries-select { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-weight: 600; color: #334155; outline: none; }
+
         .calendar-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 25px; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-header h3 { font-size: 16px; font-weight: 700; color: #002B49; }
@@ -178,6 +188,7 @@
                 <button onclick="switchTab('alat')" id="tab-alat" class="nav-btn">🧪 Katalog Alat</button>
                 <button onclick="switchTab('pemakaian-alat')" id="tab-pemakaian-alat" class="nav-btn">📋 Pemakaian Alat</button>
                 <button onclick="switchTab('maintenance')" id="tab-maintenance" class="nav-btn">🔧 Maintenance Log</button>
+                <button onclick="switchTab('dokumen')" id="tab-dokumen" class="nav-btn">📄 Dokumen SOP</button>
                 <button onclick="switchTab('kontak')" id="tab-kontak" class="nav-btn">📇 Kontak Pengelola</button>
             </div>
         </nav>
@@ -263,7 +274,6 @@
                             <h3 style="font-size:15px; color:#002B49;">⏱️ Rincian Pemakaian & Tingkat Okupansi</h3>
                             <p style="font-size:12px; color:#64748b;" class="no-print">Metrik penggunaan terintegrasi per hari dan estimasi okupansi</p>
                         </div>
-                        <!-- TOMBOL CETAK / DOWNLOAD RINCIAN OKUPANSI -->
                         <button onclick="cetakLaporan('Laporan Rincian Pemakaian dan Tingkat Okupansi Ruangan')" class="admin-only-inline btn-print">🖨️ Cetak / Download PDF</button>
                     </div>
                     <div id="freqRoomGrid"></div>
@@ -406,6 +416,20 @@
                             <tbody id="tabelPemakaianRuangan"></tbody>
                         </table>
                     </div>
+                    <!-- CONTROL PAGINATION RUANGAN -->
+                    <div class="pagination-container no-print">
+                        <div class="pagination-info">
+                            <span>Tampilkan:</span> 
+                            <select id="entriesPerPage_R" class="entries-select" onchange="changeEntriesPerPage('R', this.value)">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span>entri</span> | <span>Memuat</span> <span id="pagInfo_R">0 - 0 dari 0</span> <span>data</span>
+                        </div>
+                        <div class="pagination-controls" id="pagControls_R"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -531,6 +555,20 @@
                             <tbody id="tabelPemakaianAlat"></tbody>
                         </table>
                     </div>
+                    <!-- CONTROL PAGINATION ALAT -->
+                    <div class="pagination-container no-print">
+                        <div class="pagination-info">
+                            <span>Tampilkan:</span> 
+                            <select id="entriesPerPage_A" class="entries-select" onchange="changeEntriesPerPage('A', this.value)">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span>entri</span> | <span>Memuat</span> <span id="pagInfo_A">0 - 0 dari 0</span> <span>data</span>
+                        </div>
+                        <div class="pagination-controls" id="pagControls_A"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -579,6 +617,33 @@
                     <tbody id="tabelMaintenance"></tbody>
                 </table>
             </div>
+            <!-- CONTROL PAGINATION MAINTENANCE -->
+            <div class="pagination-container no-print">
+                <div class="pagination-info">
+                    <span>Tampilkan:</span> 
+                    <select id="entriesPerPage_M" class="entries-select" onchange="changeEntriesPerPage('M', this.value)">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="all">Semua</option>
+                    </select>
+                    <span>entri</span> | <span>Memuat</span> <span id="pagInfo_M">0 - 0 dari 0</span> <span>data</span>
+                </div>
+                <div class="pagination-controls" id="pagControls_M"></div>
+            </div>
+        </section>
+
+        <!-- PANEL DOKUMEN SOP (PDF) -->
+        <section id="sec-dokumen" style="display:none;">
+            <div class="section-title">
+                <div>
+                    <h2>Dokumen Standar Operasional Prosedur (SOP)</h2>
+                    <p>Arsip dan file pedoman penggunaan laboratorium dan keselamatan kerja</p>
+                </div>
+                <button onclick="openModalDokumen()" class="admin-only btn-admin-add">➕ Tambah Dokumen SOP</button>
+            </div>
+
+            <div id="gridDokumen" class="grid"></div>
         </section>
 
         <!-- KONTAK PENGELOLA -->
@@ -753,6 +818,44 @@
         </div>
     </div>
 
+    <div id="modalDokumen" class="modal">
+        <div class="modal-content">
+            <div id="modalDocTitle" class="modal-header">Tambah Dokumen SOP (PDF)</div>
+            <form onsubmit="saveDokumen(event)">
+                <input type="hidden" id="md_id">
+                <div class="form-group">
+                    <label>Judul Dokumen / SOP</label>
+                    <input type="text" id="md_judul" required class="form-control" placeholder="misal: SOP Keselamatan Kerja & B3">
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="md_kategori" class="form-control">
+                        <option value="SOP Umum & K3">SOP Umum & K3</option>
+                        <option value="SOP Peralatan Lab">SOP Peralatan Lab</option>
+                        <option value="SOP Ruangan">SOP Ruangan</option>
+                        <option value="Formulir & Administrasi">Formulir & Administrasi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Upload File PDF / Paste Link Google Drive / Web PDF</label>
+                    <div class="upload-section">
+                        <input type="file" id="md_file" accept="application/pdf" onchange="handlePDFUpload(event)" class="form-control" style="margin-bottom:6px;">
+                        <input type="text" id="md_url" placeholder="https://.../sop.pdf atau link Google Drive" class="form-control">
+                        <small style="font-size:10px; color:#64748b;">*Bisa mengunggah file PDF langsung (Max ~3MB) atau tempel URL PDF/Google Drive.</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi Singkat</label>
+                    <textarea id="md_deskripsi" rows="2" class="form-control" placeholder="Keterangan dokumen SOP..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('modalDokumen')" class="btn-cancel">Batal</button>
+                    <button type="submit" class="btn-submit" style="width:auto; margin-top:0;">Simpan Dokumen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // INISIALISASI FIREBASE REALTIME DATABASE
         const firebaseConfig = {
@@ -768,6 +871,13 @@
         let chartTrendOkupansiInstance = null;
         let chartBarRuanganInstance = null;
 
+        // STATE PAGINATION UNTUK TIAP TABEL (R: Ruangan, A: Alat, M: Maintenance)
+        let pageState = {
+            R: { currentPage: 1, rowsPerPage: 5 },
+            A: { currentPage: 1, rowsPerPage: 5 },
+            M: { currentPage: 1, rowsPerPage: 5 }
+        };
+
         // VARIABEL FILTER
         let filterRuanganStart = '';
         let filterRuanganEnd = '';
@@ -780,6 +890,18 @@
         let filterMaintStart = '';
         let filterMaintEnd = '';
         let filterMaintName = '';
+
+        let dataDokumen = [
+            { id: "DOC_1", judul: "SOP Keselamatan Kerja & B3", kategori: "SOP Umum & K3", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", deskripsi: "Panduan keselamatan kerja dan penanganan bahan berbahaya di laboratorium." },
+            { id: "DOC_2", judul: "SOP Pengoperasian Real-Time PCR", kategori: "SOP Peralatan Lab", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", deskripsi: "Prosedur operasional baku alat PCR Thermal Cycler." }
+        ];
+
+        let dataRuangan = {};
+        let dataAlat = {};
+        let dataPemakaianRuangan = [];
+        let dataPemakaianAlat = [];
+        let dataMaintenance = [];
+        let dataKontak = [];
 
         function convertGDriveLink(url) {
             if (!url) return '';
@@ -849,7 +971,6 @@
             }
         }
 
-        // DATA BAWAAN DEFAULT
         const defaultRuangan = {
             "R1": { id: "R1", nama: "Ruang Praktikum Biologi Kedokteran", kapasitas: 40, fasilitas: ["AC", "Mikroskop Binokuler", "LCD Projector"], foto: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
             "R2": { id: "R2", nama: "Ruang Laboratorium Kultur Sel", kapasitas: 10, fasilitas: ["Biosafety Cabinet Class II", "Incubator CO2", "HEPA Filter"], foto: "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80", status: "Tersedia" },
@@ -867,13 +988,6 @@
             { jabatan: "Laboran & Teknisi Utama", nama: "Slamet Riyadi, S.ST", wa: "6285222974300", email: "slamet.riyadi@fk.unair.ac.id", foto: "" },
             { jabatan: "Admin Administrasi Lab", nama: "Nita Permata, A.Md", wa: "6281987654321", email: "nita.permata@fk.unair.ac.id", foto: "" }
         ];
-
-        let dataRuangan = {};
-        let dataAlat = {};
-        let dataPemakaianRuangan = [];
-        let dataPemakaianAlat = [];
-        let dataMaintenance = [];
-        let dataKontak = [];
 
         function normalizeToObject(val) {
             if (!val) return {};
@@ -973,9 +1087,18 @@
                 }
                 renderKontak();
             });
+
+            db.ref('sopDocuments').on('value', (snapshot) => {
+                const val = snapshot.val();
+                if(!val) {
+                    db.ref('sopDocuments').set(dataDokumen);
+                } else {
+                    dataDokumen = Array.isArray(val) ? val : Object.values(val);
+                }
+                renderDokumen();
+            });
         }
 
-        // FUNGSI HITUNG DURASI JAM PEMAKAIAN
         function calculateDurationHours(jamMulai, jamSelesai) {
             if (!jamMulai || !jamSelesai) return 0;
             const [h1, m1] = jamMulai.split(':').map(Number);
@@ -984,7 +1107,6 @@
             return dur > 0 ? dur : 0;
         }
 
-        // UPDATE DASHBOARD STATISTIK & RENDER GRAFIK UTAMA
         function updateDashboardStats() {
             const countRooms = Object.keys(dataRuangan).length;
             const countTools = Object.keys(dataAlat).length;
@@ -1000,15 +1122,14 @@
             if (document.getElementById('stat_pending')) document.getElementById('stat_pending').innerText = totalPending;
             if (document.getElementById('stat_maint')) document.getElementById('stat_maint').innerText = countMaint;
 
-            // RENDERING CARDS STATISTIK PER RUANGAN
             const freqGrid = document.getElementById('freqRoomGrid');
             const roomNamesList = [];
             const totalHoursList = [];
 
             if (freqGrid) {
                 freqGrid.innerHTML = '';
-                const jamOperasionalHarian = 8; // Standard 08.00 - 16.00 WIB
-                const KAPASITAS_BULANAN_JAM = 20 * jamOperasionalHarian; // 160 jam/bulan
+                const jamOperasionalHarian = 8;
+                const KAPASITAS_BULANAN_JAM = 20 * jamOperasionalHarian;
 
                 if (countRooms === 0) {
                     freqGrid.innerHTML = '<p style="font-size:12px; color:#94a3b8;">Belum ada data ruangan.</p>';
@@ -1018,7 +1139,6 @@
                         const rName = r.nama || 'Ruangan';
                         roomNamesList.push(rName);
 
-                        // Pemakaian valid (Disetujui/Terpakai/Selesai/Menunggu)
                         const roomBookings = dataPemakaianRuangan.filter(p => (p.ruanganNama === rName || p.ruanganId === r.id) && p.status !== 'Ditolak');
 
                         let totalJam = 0;
@@ -1034,8 +1154,6 @@
 
                         const totalHariAktif = uniqueDaysSet.size || 1;
                         const avgJamPerHari = (totalJam / totalHariAktif).toFixed(1);
-
-                        // Tingkat Okupansi
                         const percentageOkupansi = Math.min(Math.round((totalJam / KAPASITAS_BULANAN_JAM) * 100), 100);
 
                         freqGrid.innerHTML += `
@@ -1063,18 +1181,15 @@
                 }
             }
 
-            // RENDER VISUALISASI CHARTS
             renderOkupansiCharts(roomNamesList, totalHoursList);
         }
 
-        // FUNGSI RENDER LINE CHART (TREN BULANAN) & HORIZONTAL BAR CHART
         function renderOkupansiCharts(roomNamesList, totalHoursList) {
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             
-            // Hitung Okupansi Bulanan Keseluruhan (0 - 100%)
             const monthlyOkupansiData = new Array(12).fill(0);
             const totalRuangan = roomNamesList.length || 1;
-            const KAPASITAS_TOTAL_BULAN_ALL_ROOMS = totalRuangan * 160; // 160 jam/ruangan/bulan
+            const KAPASITAS_TOTAL_BULAN_ALL_ROOMS = totalRuangan * 160;
 
             dataPemakaianRuangan.forEach(p => {
                 if (p.tanggal && p.status !== 'Ditolak') {
@@ -1086,12 +1201,10 @@
                 }
             });
 
-            // Konversi Jam ke Persentase Okupansi
             const monthlyPercentages = monthlyOkupansiData.map(totalJamBulan => {
                 return Math.min(Math.round((totalJamBulan / KAPASITAS_TOTAL_BULAN_ALL_ROOMS) * 100), 100);
             });
 
-            // 1. RENDER LINE CHART (TREN OKUPANSI BULANAN)
             const ctxLine = document.getElementById('chartTrendOkupansi');
             if (ctxLine) {
                 if (chartTrendOkupansiInstance) chartTrendOkupansiInstance.destroy();
@@ -1133,7 +1246,6 @@
                 });
             }
 
-            // 2. RENDER HORIZONTAL BAR CHART (PERBANDINGAN ANTAR RUANGAN)
             const ctxBar = document.getElementById('chartBarRuangan');
             if (ctxBar) {
                 if (chartBarRuanganInstance) chartBarRuanganInstance.destroy();
@@ -1152,7 +1264,7 @@
                         }]
                     },
                     options: {
-                        indexAxis: 'y', // Mengubah chart menjadi Horizontal Bar Chart
+                        indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
@@ -1172,6 +1284,52 @@
             }
         }
 
+        function changeEntriesPerPage(key, val) {
+            pageState[key].rowsPerPage = val === 'all' ? 'all' : parseInt(val);
+            pageState[key].currentPage = 1;
+            if (key === 'R') renderPemakaianRuangan();
+            if (key === 'A') renderPemakaianAlat();
+            if (key === 'M') renderMaintenance();
+        }
+
+        function goToPage(key, pageNum) {
+            pageState[key].currentPage = pageNum;
+            if (key === 'R') renderPemakaianRuangan();
+            if (key === 'A') renderPemakaianAlat();
+            if (key === 'M') renderMaintenance();
+        }
+
+        function renderPaginationControls(key, totalData) {
+            const state = pageState[key];
+            const controlsContainer = document.getElementById(`pagControls_${key}`);
+            const infoContainer = document.getElementById(`pagInfo_${key}`);
+
+            if (!controlsContainer || !infoContainer) return { startIndex: 0, endIndex: totalData };
+
+            let rowsPerPage = state.rowsPerPage === 'all' ? totalData : state.rowsPerPage;
+            if (rowsPerPage <= 0) rowsPerPage = 5;
+
+            const totalPages = Math.ceil(totalData / rowsPerPage) || 1;
+            if (state.currentPage > totalPages) state.currentPage = totalPages;
+
+            const startIndex = (state.currentPage - 1) * rowsPerPage;
+            const endIndex = state.rowsPerPage === 'all' ? totalData : Math.min(startIndex + rowsPerPage, totalData);
+
+            infoContainer.innerText = totalData === 0 ? '0 - 0 dari 0' : `${startIndex + 1} - ${endIndex} dari ${totalData}`;
+
+            let buttonsHTML = '';
+            buttonsHTML += `<button onclick="goToPage('${key}', ${state.currentPage - 1})" class="page-btn" ${state.currentPage === 1 ? 'disabled' : ''}>&lt; Prev</button>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                buttonsHTML += `<button onclick="goToPage('${key}', ${i})" class="page-btn ${i === state.currentPage ? 'active' : ''}">${i}</button>`;
+            }
+
+            buttonsHTML += `<button onclick="goToPage('${key}', ${state.currentPage + 1})" class="page-btn" ${state.currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}>Next &gt;</button>`;
+            controlsContainer.innerHTML = buttonsHTML;
+
+            return { startIndex, endIndex };
+        }
+
         function resetDataBawaan() {
             if(confirm('Reset semua data Ruangan dan Alat ke data awal bawaan?')) {
                 db.ref('rooms').set(defaultRuangan);
@@ -1184,8 +1342,11 @@
             document.querySelectorAll('main > section').forEach(s => s.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             
-            document.getElementById(`sec-${tabId}`).style.display = 'block';
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const targetSec = document.getElementById(`sec-${tabId}`);
+            const targetBtn = document.getElementById(`tab-${tabId}`);
+
+            if (targetSec) targetSec.style.display = 'block';
+            if (targetBtn) targetBtn.classList.add('active');
 
             if (tabId === 'pemakaian-ruangan') renderCalendar();
         }
@@ -1222,8 +1383,14 @@
             renderAll();
         }
 
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { 
+            const el = document.getElementById(id);
+            if(el) el.classList.remove('open'); 
+        }
+        function openModal(id) { 
+            const el = document.getElementById(id);
+            if(el) el.classList.add('open'); 
+        }
 
         function openModalBanner() {
             document.getElementById('mb_title').value = document.getElementById('dash_banner_title').innerText;
@@ -1285,10 +1452,12 @@
             const quickGrid = document.getElementById('quickRoomStatusGrid');
             const select = document.getElementById('p_ruangan');
             const filterSelect = document.getElementById('filter_r_name');
+            if (!grid) return;
+            
             grid.innerHTML = ''; 
             if (quickGrid) quickGrid.innerHTML = '';
             select.innerHTML = ''; 
-            if (filterSelect) filterSelect.innerHTML = '<option value="">-- Semua Ruangan --</option>';
+            if (filterSelect) filterSelect.innerHTML = `<option value="">-- Semua Ruangan --</option>`;
 
             const keys = Object.keys(dataRuangan);
             keys.forEach(key => {
@@ -1338,50 +1507,34 @@
             });
         }
 
-        // FILTER PEMAKAIAN RUANGAN
-        function applyFilterRuangan() {
-            filterRuanganStart = document.getElementById('filter_r_start').value;
-            filterRuanganEnd = document.getElementById('filter_r_end').value;
-            filterRuanganName = document.getElementById('filter_r_name').value;
-            renderPemakaianRuangan();
-        }
-        function resetFilterRuangan() {
-            document.getElementById('filter_r_start').value = '';
-            document.getElementById('filter_r_end').value = '';
-            document.getElementById('filter_r_name').value = '';
-            filterRuanganStart = '';
-            filterRuanganEnd = '';
-            filterRuanganName = '';
-            renderPemakaianRuangan();
-        }
-
         function renderPemakaianRuangan() {
             const tb = document.getElementById('tabelPemakaianRuangan');
+            if(!tb) return;
             tb.innerHTML = '';
 
             let filteredList = [...dataPemakaianRuangan];
 
-            if (filterRuanganName) {
-                filteredList = filteredList.filter(p => p.ruanganNama === filterRuanganName);
-            }
+            if (filterRuanganName) filteredList = filteredList.filter(p => p.ruanganNama === filterRuanganName);
             if (filterRuanganStart && filterRuanganEnd) {
                 filteredList = filteredList.filter(p => p.tanggal >= filterRuanganStart && p.tanggal <= filterRuanganEnd);
             }
 
-            // PENGURUTAN KRONOLOGIS (TANGGAL & JAM MULAI)
             filteredList.sort((a, b) => {
                 const dateA = (a.tanggal || '') + ' ' + (a.jamMulai || '00:00');
                 const dateB = (b.tanggal || '') + ' ' + (b.jamMulai || '00:00');
                 return dateA.localeCompare(dateB);
             });
 
-            filteredList.forEach((p, idx) => {
+            const { startIndex, endIndex } = renderPaginationControls('R', filteredList.length);
+            const pageData = filteredList.slice(startIndex, endIndex);
+
+            pageData.forEach((p, idx) => {
                 let kegText = p.kegiatan ? `<strong>[${p.kegiatan}]</strong> ` : '';
                 let dosenText = p.dosen ? `<br><small style="color:#0f172a;">👴 PJ: ${p.dosen}</small>` : '';
 
                 tb.innerHTML += `
                     <tr>
-                        <td style="text-align:center; font-weight:bold; color:#002B49;">${idx + 1}</td>
+                        <td style="text-align:center; font-weight:bold; color:#002B49;">${startIndex + idx + 1}</td>
                         <td><strong>${p.pemohon || '-'}</strong><br><small>${p.nim || '-'}</small><br><small style="color:#2563eb;">${p.instansi || '-'}</small></td>
                         <td>${p.ruanganNama || '-'}</td>
                         <td><strong>${p.jumlahPemakai || 1} Orang</strong></td>
@@ -1409,9 +1562,10 @@
             const filterAlatSelect = document.getElementById('filter_a_name');
             const filterMaintSelect = document.getElementById('filter_m_name');
 
+            if (!grid) return;
             grid.innerHTML = ''; selectAlat.innerHTML = ''; selectMaint.innerHTML = '';
-            if (filterAlatSelect) filterAlatSelect.innerHTML = '<option value="">-- Semua Alat --</option>';
-            if (filterMaintSelect) filterMaintSelect.innerHTML = '<option value="">-- Semua Alat --</option>';
+            if (filterAlatSelect) filterAlatSelect.innerHTML = `<option value="">-- Semua Alat --</option>`;
+            if (filterMaintSelect) filterMaintSelect.innerHTML = `<option value="">-- Semua Alat --</option>`;
 
             const keys = Object.keys(dataAlat);
             keys.forEach(key => {
@@ -1454,51 +1608,35 @@
             });
         }
 
-        // FILTER PEMAKAIAN ALAT
-        function applyFilterAlat() {
-            filterAlatStart = document.getElementById('filter_a_start').value;
-            filterAlatEnd = document.getElementById('filter_a_end').value;
-            filterAlatName = document.getElementById('filter_a_name').value;
-            renderPemakaianAlat();
-        }
-        function resetFilterAlat() {
-            document.getElementById('filter_a_start').value = '';
-            document.getElementById('filter_a_end').value = '';
-            document.getElementById('filter_a_name').value = '';
-            filterAlatStart = '';
-            filterAlatEnd = '';
-            filterAlatName = '';
-            renderPemakaianAlat();
-        }
-
         function renderPemakaianAlat() {
             const tb = document.getElementById('tabelPemakaianAlat');
+            if (!tb) return;
             tb.innerHTML = '';
 
             let filteredList = [...dataPemakaianAlat];
 
-            if (filterAlatName) {
-                filteredList = filteredList.filter(pa => pa.alatNama === filterAlatName);
-            }
+            if (filterAlatName) filteredList = filteredList.filter(pa => pa.alatNama === filterAlatName);
             if (filterAlatStart && filterAlatEnd) {
                 filteredList = filteredList.filter(pa => pa.tanggal >= filterAlatStart && pa.tanggal <= filterAlatEnd);
             }
 
-            // PENGURUTAN KRONOLOGIS (TANGGAL & JAM MULAI)
             filteredList.sort((a, b) => {
                 const dateA = (a.tanggal || '') + ' ' + (a.jamMulai || '00:00');
                 const dateB = (b.tanggal || '') + ' ' + (b.jamMulai || '00:00');
                 return dateA.localeCompare(dateB);
             });
 
-            filteredList.forEach((pa, idx) => {
+            const { startIndex, endIndex } = renderPaginationControls('A', filteredList.length);
+            const pageData = filteredList.slice(startIndex, endIndex);
+
+            pageData.forEach((pa, idx) => {
                 let jadwalText = pa.tanggal ? `${pa.tanggal}<br><small>${pa.jamMulai || ''} - ${pa.jamSelesai || ''} WIB</small>` : '-';
                 let kegText = pa.kegiatan ? `<strong>[${pa.kegiatan}]</strong> ` : '';
                 let dosenText = pa.dosen ? `<br><small style="color:#0f172a;">👴 PJ: ${pa.dosen}</small>` : '';
 
                 tb.innerHTML += `
                     <tr>
-                        <td style="text-align:center; font-weight:bold; color:#002B49;">${idx + 1}</td>
+                        <td style="text-align:center; font-weight:bold; color:#002B49;">${startIndex + idx + 1}</td>
                         <td><strong>${pa.pemohon || '-'}</strong><br><small>${pa.nim || '-'}</small><br><small style="color:#2563eb;">${pa.instansi || '-'}</small></td>
                         <td>${pa.alatNama || '-'}</td>
                         <td>${pa.jumlah || 1} Unit<br><small>(${pa.jumlahPemakai || 1} Pemakai)</small></td>
@@ -1517,43 +1655,45 @@
             });
         }
 
-        // FILTER MAINTENANCE LOG
+        // FILTER & RENDER MAINTENANCE LOG
         function applyFilterMaint() {
             filterMaintStart = document.getElementById('filter_m_start').value;
             filterMaintEnd = document.getElementById('filter_m_end').value;
             filterMaintName = document.getElementById('filter_m_name').value;
+            pageState.M.currentPage = 1;
             renderMaintenance();
         }
+
         function resetFilterMaint() {
             document.getElementById('filter_m_start').value = '';
             document.getElementById('filter_m_end').value = '';
             document.getElementById('filter_m_name').value = '';
-            filterMaintStart = '';
-            filterMaintEnd = '';
-            filterMaintName = '';
+            filterMaintStart = ''; filterMaintEnd = ''; filterMaintName = '';
+            pageState.M.currentPage = 1;
             renderMaintenance();
         }
 
         function renderMaintenance() {
             const tb = document.getElementById('tabelMaintenance');
+            if(!tb) return;
             tb.innerHTML = '';
 
             let filteredList = [...dataMaintenance];
 
-            if (filterMaintName) {
-                filteredList = filteredList.filter(m => m.alatNama === filterMaintName);
-            }
+            if (filterMaintName) filteredList = filteredList.filter(m => m.alatNama === filterMaintName);
             if (filterMaintStart && filterMaintEnd) {
                 filteredList = filteredList.filter(m => m.tanggal >= filterMaintStart && m.tanggal <= filterMaintEnd);
             }
 
-            // PENGURUTAN KRONOLOGIS (TANGGAL)
             filteredList.sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''));
 
-            filteredList.forEach((m, idx) => {
+            const { startIndex, endIndex } = renderPaginationControls('M', filteredList.length);
+            const pageData = filteredList.slice(startIndex, endIndex);
+
+            pageData.forEach((m, idx) => {
                 tb.innerHTML += `
                     <tr>
-                        <td style="text-align:center; font-weight:bold; color:#002B49;">${idx + 1}</td>
+                        <td style="text-align:center; font-weight:bold; color:#002B49;">${startIndex + idx + 1}</td>
                         <td>${m.tanggal || '-'}</td>
                         <td><strong>${m.alatNama || '-'}</strong></td>
                         <td>${m.jenis || '-'}</td>
@@ -1574,6 +1714,7 @@
 
         function renderKontak() {
             const grid = document.getElementById('gridKontak');
+            if(!grid) return;
             grid.innerHTML = '';
             dataKontak.forEach((c) => {
                 let directFotoUrl = convertGDriveLink(c.foto);
@@ -1600,14 +1741,102 @@
             });
         }
 
-        function renderAll() {
-            renderRuangan();
-            renderPemakaianRuangan();
-            renderAlat();
-            renderPemakaianAlat();
-            renderMaintenance();
-            renderKontak();
-            updateDashboardStats();
+        function handlePDFUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 3 * 1024 * 1024) {
+                alert('File PDF terlalu besar (Maksimal ~3MB)! Disarankan menggunakan link Google Drive/URL PDF.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('md_url').value = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openModalDokumen() {
+            document.getElementById('modalDocTitle').innerText = 'Tambah Dokumen SOP (PDF)';
+            document.getElementById('md_id').value = '';
+            document.getElementById('md_judul').value = '';
+            document.getElementById('md_file').value = '';
+            document.getElementById('md_url').value = '';
+            document.getElementById('md_deskripsi').value = '';
+            openModal('modalDokumen');
+        }
+
+        function saveDokumen(e) {
+            e.preventDefault();
+            const id = document.getElementById('md_id').value || ('DOC_' + Date.now());
+            const newDoc = {
+                id: id,
+                judul: document.getElementById('md_judul').value,
+                kategori: document.getElementById('md_kategori').value,
+                url: document.getElementById('md_url').value,
+                deskripsi: document.getElementById('md_deskripsi').value
+            };
+            db.ref('sopDocuments/' + id).set(newDoc, (err) => {
+                if(!err) closeModal('modalDokumen');
+            });
+        }
+
+        function editDokumen(id) {
+            const doc = dataDokumen.find(d => d.id === id);
+            if(doc) {
+                document.getElementById('modalDocTitle').innerText = 'Edit Dokumen SOP';
+                document.getElementById('md_id').value = doc.id;
+                document.getElementById('md_judul').value = doc.judul || '';
+                document.getElementById('md_kategori').value = doc.kategori || 'SOP Umum & K3';
+                document.getElementById('md_url').value = doc.url || '';
+                document.getElementById('md_deskripsi').value = doc.deskripsi || '';
+                openModal('modalDokumen');
+            }
+        }
+
+        function deleteDokumen(id) {
+            if(confirm('Hapus dokumen SOP ini?')) {
+                db.ref('sopDocuments/' + id).remove();
+            }
+        }
+
+        function printPDFDocument(pdfUrl) {
+            if (!isAdmin) {
+                alert('Hanya Admin yang dapat mencetak file ini!');
+                return;
+            }
+            const printWin = window.open(pdfUrl, '_blank');
+            if (printWin) {
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 1000);
+            }
+        }
+
+        function renderDokumen() {
+            const grid = document.getElementById('gridDokumen');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            dataDokumen.forEach(doc => {
+                grid.innerHTML += `
+                    <div class="card" style="padding:15px;">
+                        <div>
+                            <span class="card-badge" style="background:#f1f5f9; color:#002B49;">📑 ${doc.kategori || 'SOP'}</span>
+                            <h3 style="font-size:15px; margin:8px 0 5px 0;">${doc.judul || 'Dokumen SOP'}</h3>
+                            <p style="font-size:12px; color:#64748b; margin-bottom:12px;">${doc.deskripsi || '-'}</p>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #f1f5f9; padding-top:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:5px;">
+                                <a href="${doc.url}" target="_blank" class="btn-action" style="background:#eff6ff; padding:6px 10px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold; color:#1d4ed8;">📖 Buka PDF</a>
+                                <button onclick="printPDFDocument('${doc.url}')" class="btn-print" style="padding:6px 10px; font-size:11px;">🖨️ Cetak PDF</button>
+                            </div>
+                            <div class="admin-only" style="display:${isAdmin ? 'flex' : 'none'}; gap:6px; justify-content:flex-end; margin-top:5px;">
+                                <button onclick="editDokumen('${doc.id}')" style="color:#2563eb; border:none; background:none; font-size:11px; cursor:pointer;">✏️ Edit</button>
+                                <button onclick="deleteDokumen('${doc.id}')" style="color:#ef4444; border:none; background:none; font-size:11px; cursor:pointer;">🗑️ Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         function isTimeOverlap(startA, endA, startB, endB) {
@@ -1711,24 +1940,14 @@
             });
         }
 
-        function setStatusRuangan(id, st) {
-            db.ref('roomBookings/' + id + '/status').set(st);
-        }
-
+        function setStatusRuangan(id, st) { db.ref('roomBookings/' + id + '/status').set(st); }
         function deletePemakaianRuangan(id) {
-            if(confirm('Hapus riwayat/pengajuan pemakaian ruangan ini?')) {
-                db.ref('roomBookings/' + id).remove();
-            }
+            if(confirm('Hapus riwayat/pengajuan pemakaian ruangan ini?')) db.ref('roomBookings/' + id).remove();
         }
 
-        function setStatusAlat(id, st) {
-            db.ref('usageLogs/' + id + '/status').set(st);
-        }
-
+        function setStatusAlat(id, st) { db.ref('usageLogs/' + id + '/status').set(st); }
         function deletePemakaianAlat(id) {
-            if(confirm('Hapus riwayat/pengajuan peminjaman alat ini?')) {
-                db.ref('usageLogs/' + id).remove();
-            }
+            if(confirm('Hapus riwayat/pengajuan peminjaman alat ini?')) db.ref('usageLogs/' + id).remove();
         }
 
         function openModalSOP(id) {
@@ -1779,16 +1998,11 @@
                 foto: document.getElementById('mr_foto').value,
                 status: document.getElementById('mr_status').value
             };
-
-            db.ref('rooms/' + id).set(item, (err) => {
-                if(!err) closeModal('modalRuangan');
-            });
+            db.ref('rooms/' + id).set(item, (err) => { if(!err) closeModal('modalRuangan'); });
         }
 
         function deleteRuangan(id) {
-            if(confirm('Hapus ruangan ini?')) { 
-                db.ref('rooms/' + id).remove();
-            }
+            if(confirm('Hapus ruangan ini?')) db.ref('rooms/' + id).remove();
         }
 
         function openModalAlat() {
@@ -1832,16 +2046,11 @@
                 status: document.getElementById('ma_status').value,
                 sop: document.getElementById('ma_sop').value
             };
-
-            db.ref('equipments/' + id).set(item, (err) => {
-                if(!err) closeModal('modalAlat');
-            });
+            db.ref('equipments/' + id).set(item, (err) => { if(!err) closeModal('modalAlat'); });
         }
 
         function deleteAlat(id) {
-            if(confirm('Hapus alat ini?')) { 
-                db.ref('equipments/' + id).remove();
-            }
+            if(confirm('Hapus alat ini?')) db.ref('equipments/' + id).remove();
         }
 
         function openModalMaintenance() {
@@ -1882,9 +2091,7 @@
                 kondisi: document.getElementById('mm_kondisi').value,
                 catatan: document.getElementById('mm_catatan').value
             };
-            db.ref('maintenanceLogs/' + id).set(newObj, (err) => {
-                if(!err) closeModal('modalMaintenance');
-            });
+            db.ref('maintenanceLogs/' + id).set(newObj, (err) => { if(!err) closeModal('modalMaintenance'); });
         }
 
         function finishMaintenance(id) {
@@ -1894,13 +2101,12 @@
         }
 
         function deleteMaintenance(id) {
-            if(confirm('Hapus log maintenance ini?')) {
-                db.ref('maintenanceLogs/' + id).remove();
-            }
+            if(confirm('Hapus log maintenance ini?')) db.ref('maintenanceLogs/' + id).remove();
         }
 
         function openModalKontak() {
             const container = document.getElementById('containerFormKontak');
+            if(!container) return;
             container.innerHTML = '';
             dataKontak.forEach((c, i) => {
                 let previewSrc = convertGDriveLink(c.foto);
@@ -1945,6 +2151,17 @@
         function cetakLaporan(judul) {
             if(!isAdmin) { alert('Hanya Admin yang dapat melakukan cetak PDF.'); return; }
             window.print();
+        }
+
+        function renderAll() {
+            renderRuangan();
+            renderPemakaianRuangan();
+            renderAlat();
+            renderPemakaianAlat();
+            renderMaintenance();
+            renderKontak();
+            renderDokumen();
+            updateDashboardStats();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
