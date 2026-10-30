@@ -856,6 +856,19 @@
         </div>
     </div>
 
+    <!-- MODAL POPUP VIEW PDF SECURE -->
+    <div id="modalViewPDF" class="modal">
+        <div class="modal-content" style="max-width:900px; width:95%; height:85vh; display:flex; flex-direction:column; padding:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                <h3 id="pdfViewerTitle" style="font-size:16px; color:#002B49; font-weight:700;">Pratinjau Dokumen SOP</h3>
+                <button onclick="closeModal('modalViewPDF')" class="btn-cancel" style="padding:4px 10px;">✕ Tutup</button>
+            </div>
+            <div style="flex:1; width:100%; position:relative; background:#f1f5f9; border-radius:8px; overflow:hidden;">
+                <iframe id="pdfFrame" style="width:100%; height:100%; border:none;" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         // INISIALISASI FIREBASE REALTIME DATABASE
         const firebaseConfig = {
@@ -891,10 +904,7 @@
         let filterMaintEnd = '';
         let filterMaintName = '';
 
-        let dataDokumen = [
-            { id: "DOC_1", judul: "SOP Keselamatan Kerja & B3", kategori: "SOP Umum & K3", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", deskripsi: "Panduan keselamatan kerja dan penanganan bahan berbahaya di laboratorium." },
-            { id: "DOC_2", judul: "SOP Pengoperasian Real-Time PCR", kategori: "SOP Peralatan Lab", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", deskripsi: "Prosedur operasional baku alat PCR Thermal Cycler." }
-        ];
+        let dataDokumen = [];
 
         let dataRuangan = {};
         let dataAlat = {};
@@ -912,6 +922,33 @@
                 return `https://lh3.googleusercontent.com/d/${match[1]}`;
             }
             return url;
+        }
+
+        // FUNGSI KHUSUS KONVERSI LINK GOOGLE DRIVE PDF KE VIEWER
+        function convertGDrivePDFLink(url) {
+            if (!url) return '';
+            url = String(url).trim();
+            if (url.startsWith('data:application/pdf')) return url;
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://drive.google.com/file/d/${match[1]}/preview`;
+            }
+            return url;
+        }
+
+        // FUNGSI DENGAN PROTEKSI TANPA DOWNLOAD/PRINT TOOLBAR
+        function viewPDFProtected(url, title) {
+            const pdfViewerUrl = convertGDrivePDFLink(url);
+            let finalUrl = pdfViewerUrl;
+
+            // Jika link PDF langsung/Base64, tambahkan parameter pembatasan toolbar PDF
+            if (!finalUrl.includes('drive.google.com')) {
+                finalUrl = finalUrl + '#toolbar=0&navpanes=0&scrollbar=0';
+            }
+
+            document.getElementById('pdfViewerTitle').innerText = title || 'Dokumen SOP';
+            document.getElementById('pdfFrame').src = finalUrl;
+            openModal('modalViewPDF');
         }
 
         function handleFileSelectCompressed(event, targetInputId, previewImgId) {
@@ -1091,9 +1128,10 @@
             db.ref('sopDocuments').on('value', (snapshot) => {
                 const val = snapshot.val();
                 if(!val) {
-                    db.ref('sopDocuments').set(dataDokumen);
+                    db.ref('sopDocuments').set({});
+                    dataDokumen = {};
                 } else {
-                    dataDokumen = Array.isArray(val) ? val : Object.values(val);
+                    dataDokumen = normalizeToObject(val);
                 }
                 renderDokumen();
             });
@@ -1378,7 +1416,7 @@
         function updateAdminUI() {
             document.getElementById('adminBadge').style.display = isAdmin ? 'inline-block' : 'none';
             document.getElementById('loginBtn').innerText = isAdmin ? 'Logout Admin' : 'Login Admin';
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'inline-block' : 'none');
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'block' : 'none');
             document.querySelectorAll('.admin-only-inline').forEach(el => el.style.display = isAdmin ? 'inline-block' : 'none');
             renderAll();
         }
@@ -1776,12 +1814,18 @@
                 deskripsi: document.getElementById('md_deskripsi').value
             };
             db.ref('sopDocuments/' + id).set(newDoc, (err) => {
-                if(!err) closeModal('modalDokumen');
+                if(!err) {
+                    closeModal('modalDokumen');
+                    alert('Dokumen SOP berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan dokumen: ' + err.message);
+                }
             });
         }
 
         function editDokumen(id) {
-            const doc = dataDokumen.find(d => d.id === id);
+            const docList = Array.isArray(dataDokumen) ? dataDokumen : Object.values(dataDokumen);
+            const doc = docList.find(d => d && String(d.id) === String(id));
             if(doc) {
                 document.getElementById('modalDocTitle').innerText = 'Edit Dokumen SOP';
                 document.getElementById('md_id').value = doc.id;
@@ -1790,12 +1834,20 @@
                 document.getElementById('md_url').value = doc.url || '';
                 document.getElementById('md_deskripsi').value = doc.deskripsi || '';
                 openModal('modalDokumen');
+            } else {
+                alert('Data dokumen tidak ditemukan.');
             }
         }
 
         function deleteDokumen(id) {
-            if(confirm('Hapus dokumen SOP ini?')) {
-                db.ref('sopDocuments/' + id).remove();
+            if(confirm('Apakah Anda yakin ingin menghapus dokumen SOP ini?')) {
+                db.ref('sopDocuments/' + id).remove((err) => {
+                    if(!err) {
+                        alert('Dokumen SOP berhasil dihapus!');
+                    } else {
+                        alert('Gagal menghapus dokumen: ' + err.message);
+                    }
+                });
             }
         }
 
@@ -1816,7 +1868,19 @@
             if(!grid) return;
             grid.innerHTML = '';
 
-            dataDokumen.forEach(doc => {
+            const docsList = Array.isArray(dataDokumen) 
+                ? dataDokumen 
+                : (dataDokumen ? Object.values(dataDokumen) : []);
+
+            if (!docsList || docsList.length === 0) {
+                grid.innerHTML = '<p style="font-size:13px; color:#64748b;">Belum ada dokumen SOP yang diunggah.</p>';
+                return;
+            }
+
+            docsList.forEach(doc => {
+                if (!doc) return;
+                const docId = doc.id;
+                const pdfViewerUrl = convertGDrivePDFLink(doc.url);
                 grid.innerHTML += `
                     <div class="card" style="padding:15px;">
                         <div>
@@ -1826,12 +1890,14 @@
                         </div>
                         <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #f1f5f9; padding-top:10px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; gap:5px;">
-                                <a href="${doc.url}" target="_blank" class="btn-action" style="background:#eff6ff; padding:6px 10px; border-radius:6px; text-decoration:none; font-size:12px; font-weight:bold; color:#1d4ed8;">📖 Buka PDF</a>
-                                <button onclick="printPDFDocument('${doc.url}')" class="btn-print" style="padding:6px 10px; font-size:11px;">🖨️ Cetak PDF</button>
+                                <button onclick="viewPDFProtected('${doc.url}', '${(doc.judul || 'Dokumen SOP').replace(/'/g, "\\'")}')" class="btn-action" style="background:#eff6ff; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; color:#1d4ed8; border:none; cursor:pointer;">📖 Buka PDF</button>
+                                <button onclick="printPDFDocument('${pdfViewerUrl}')" class="btn-print" style="padding:6px 10px; font-size:11px;">🖨️ Cetak PDF</button>
                             </div>
-                            <div class="admin-only" style="display:${isAdmin ? 'flex' : 'none'}; gap:6px; justify-content:flex-end; margin-top:5px;">
-                                <button onclick="editDokumen('${doc.id}')" style="color:#2563eb; border:none; background:none; font-size:11px; cursor:pointer;">✏️ Edit</button>
-                                <button onclick="deleteDokumen('${doc.id}')" style="color:#ef4444; border:none; background:none; font-size:11px; cursor:pointer;">🗑️ Hapus</button>
+                            <div class="admin-only" style="display:${isAdmin ? 'block' : 'none'}; margin-top:8px;">
+                                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                    <button onclick="editDokumen('${docId}')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">✏️ Edit</button>
+                                    <button onclick="deleteDokumen('${docId}')" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ Hapus</button>
+                                </div>
                             </div>
                         </div>
                     </div>
